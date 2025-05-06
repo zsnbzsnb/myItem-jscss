@@ -1,249 +1,318 @@
+<!DOCTYPE html>
 <html lang="zh-CN">
-  <head>
+
+<head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>我的商品</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link
-      rel="stylesheet"
-      href="https://cdn.bootcdn.net/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+        rel="stylesheet"
+        href="https://cdn.bootcdn.net/ajax/libs/font-awesome/6.4.0/css/all.min.css"
     />
     <style>
-      .product-card:hover {
-          transform: translateY(-2px);
-          box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-      }
+        /* 全局样式 */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .product-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+
+        /* 返回按钮样式，调整为淡色系 */
+        .back-btn {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.6rem 1.2rem;
+            border-radius: 0.5rem;
+            background-color: #e5e7eb; /* 淡灰色背景 */
+            color: #374151; /* 深色文字 */
+            transition: all 0.3s ease;
+        }
+
+        .back-btn:hover {
+            background-color: #d1d5db; /* 悬停时颜色加深 */
+            transform: translateY(-1px);
+        }
+
+        .back-btn i {
+            margin-right: 0.6rem;
+        }
+
+        /* 滑动按钮样式 */
+        .toggle-checkbox {
+            right: 0;
+            left: auto;
+            border-color: #10B981;
+        }
+
+        .toggle-checkbox:not(:checked) {
+            right: auto;
+            left: 0;
+            border-color: #D1D5DB;
+        }
+
+        .toggle-checkbox:checked+.toggle-label {
+            background-color: #10B981;
+        }
+
+        .toggle-checkbox:not(:checked)+.toggle-label {
+            background-color: #D1D5DB;
+        }
+
+        .toggle-label {
+            transition: all 0.3s ease-in-out;
+            display: inline-block;
+            width: 40px;
+            height: 24px;
+            border-radius: 12px;
+            position: relative;
+        }
+
+        .toggle-label::after {
+            content: "";
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background-color: white;
+            transition: all 0.3s ease-in-out;
+        }
+
+        .toggle-checkbox:checked+.toggle-label::after {
+            transform: translateX(16px);
+        }
+
+        /* 固定头部样式 */
+        .fixed-header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background-color: #ffffff;
+            z-index: 100;
+            padding: 1.5rem 2rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            transition: padding 0.3s ease;
+        }
+
+        .fixed-header.scrolled {
+            padding: 1rem 2rem;
+        }
+
+        /* 头部内容布局 */
+        .header-content {
+            display: flex;
+            flex-wrap: wrap; /* 允许内容换行 */
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        /* 标题样式 */
+        .page-title {
+            font-size: 1.875rem;
+            font-weight: 600;
+            color: #1f2937;
+            margin-right: auto; /* 让标题靠左 */
+        }
+
+        /* 删除按钮样式 */
+        .delete-btn {
+            padding: 0.6rem 1.2rem;
+            border-radius: 0.5rem;
+            background-color: #ef4444;
+            color: white;
+            transition: all 0.3s ease;
+        }
+
+        .delete-btn:hover {
+            background-color: #dc2626;
+            transform: translateY(-1px);
+        }
+
+        /* 商品列表样式 */
+        .product-list-container {
+            margin-top: 180px;
+            max-width: 1200px;
+            margin-left: auto;
+            margin-right: auto;
+            padding: 0 1rem;
+        }
+
+        /* 商品项样式 */
+        .cart-item {
+            display: flex;
+            align-items: center;
+            padding: 1.5rem;
+            border-bottom: 1px solid #e5e7eb;
+            transition: background-color 0.3s ease;
+        }
+
+        .cart-item:hover {
+            background-color: #f9fafb;
+        }
+
+        /* 全选区域样式 */
+        .select-all-area {
+            padding: 1.5rem;
+            border-bottom: 1px solid #e5e7eb;
+            background-color: #f3f4f6;
+        }
     </style>
-  </head>
-  <body class="bg-gray-50 min-h-screen">
-    <div class="container mx-auto px-4 py-8">
-      <!-- 头部返回按钮 -->
-      <div class="mb-6">
-        <button
-          onclick="window.location.href='my.html'"
-          class="flex items-center text-blue-600 hover:text-blue-800"
-        >
-          <i class="fas fa-arrow-left mr-2"> </i>
-          <span> 返回 </span>
-        </button>
-      </div>
-      <!-- 标题 -->
-      <h1 class="text-2xl font-bold text-gray-800 mb-8">我的商品</h1>
-      <!-- 商品列表 -->
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <!-- 商品卡片1 -->
-        <div
-          class="product-card bg-white rounded-lg shadow-md overflow-hidden transition-all duration-300"
-        >
-          <div class="relative">
-            <img
-              src="https://aidev.gemcoder.com/staticResource/echoAiSystemImages/176e06d78c3aaa5bfaa594626b6b2d9e.png"
-              alt="智能手机"
-              class="w-full h-48 object-cover"
-            />
-          </div>
-          <div class="p-4">
-            <h3 class="text-lg font-semibold text-gray-800 mb-2">
-              高端智能手机
-            </h3>
-            <p class="text-gray-600 text-sm mb-2">
-              最新款旗舰手机，高性能处理器
-            </p>
-            <div class="flex justify-between items-center">
-              <span class="text-red-500 font-bold"> ¥5999 </span>
-              <div class="flex space-x-2">
-                <button
-                  onclick="editProduct(1)"
-                  class="text-blue-600 hover:text-blue-800"
-                >
-                  <i class="fas fa-edit"> </i>
-                </button>
-                <button
-                  onclick="deleteProduct(1)"
-                  class="text-red-600 hover:text-red-800"
-                >
-                  <i class="fas fa-trash-alt"> </i>
-                </button>
-              </div>
+</head>
+
+<body class="bg-gray-50 min-h-screen">
+    <!-- 固定头部容器 -->
+    <div class="fixed-header">
+        <div class="header-content">
+            <!-- 修改返回按钮 -->
+            <div class="mr-4">
+                <a href="my.html" class="back-btn">
+                    <i class="fas fa-arrow-left"></i>
+                    <span> 返回 </span>
+                </a>
             </div>
-          </div>
-        </div>
-        <!-- 商品卡片2 -->
-        <div
-          class="product-card bg-white rounded-lg shadow-md overflow-hidden transition-all duration-300"
-        >
-          <div class="relative">
-            <img
-              src="https://aidev.gemcoder.com/staticResource/echoAiSystemImages/2c7b9b4011d3a7eb278528cb92283be2.png"
-              alt="无线耳机"
-              class="w-full h-48 object-cover"
-            />
-          </div>
-          <div class="p-4">
-            <h3 class="text-lg font-semibold text-gray-800 mb-2">
-              无线降噪耳机
-            </h3>
-            <p class="text-gray-600 text-sm mb-2">主动降噪，30小时续航</p>
-            <div class="flex justify-between items-center">
-              <span class="text-red-500 font-bold"> ¥1299 </span>
-              <div class="flex space-x-2">
-                <button
-                  onclick="editProduct(2)"
-                  class="text-blue-600 hover:text-blue-800"
-                >
-                  <i class="fas fa-edit"> </i>
-                </button>
-                <button
-                  onclick="deleteProduct(2)"
-                  class="text-red-600 hover:text-red-800"
-                >
-                  <i class="fas fa-trash-alt"> </i>
-                </button>
-              </div>
+            <!-- 标题和删除按钮 -->
+            <div class="flex items-center flex-grow">
+                <h1 class="page-title">我的商品</h1>
+                <div class="ml-auto">
+                    <button id="delete-selected" class="delete-btn">
+                        <i class="fas fa-trash-alt mr-1"></i>
+                        删除选中
+                    </button>
+                </div>
             </div>
-          </div>
         </div>
-        <!-- 商品卡片3 -->
-        <div
-          class="product-card bg-white rounded-lg shadow-md overflow-hidden transition-all duration-300"
-        >
-          <div class="relative">
-            <img
-              src="https://aidev.gemcoder.com/staticResource/echoAiSystemImages/9d8892c77a9f83aafd571bb7c2f111b7.png"
-              alt="笔记本电脑"
-              class="w-full h-48 object-cover"
-            />
-          </div>
-          <div class="p-4">
-            <h3 class="text-lg font-semibold text-gray-800 mb-2">
-              轻薄笔记本电脑
-            </h3>
-            <p class="text-gray-600 text-sm mb-2">超薄设计，高性能办公本</p>
-            <div class="flex justify-between items-center">
-              <span class="text-red-500 font-bold"> ¥8999 </span>
-              <div class="flex space-x-2">
-                <button
-                  onclick="editProduct(3)"
-                  class="text-blue-600 hover:text-blue-800"
-                >
-                  <i class="fas fa-edit"> </i>
-                </button>
-                <button
-                  onclick="deleteProduct(3)"
-                  class="text-red-600 hover:text-red-800"
-                >
-                  <i class="fas fa-trash-alt"> </i>
-                </button>
-              </div>
+    </div>
+    <div class="product-list-container">
+        <!-- 商品列表 -->
+        <div class="bg-white rounded-lg shadow-md overflow-hidden mb-8">
+            <div class="select-all-area">
+                <div class="flex items-center">
+                    <input
+                        type="checkbox"
+                        id="select-all"
+                        class="h-5 w-5 text-blue-600 rounded mr-3"
+                    />
+                    <label for="select-all" class="text-gray-700"> 全选 </label>
+                </div>
             </div>
-          </div>
+            <div id="cart-items-container">
+                <!-- 商品项将通过JS动态生成 -->
+            </div>
         </div>
-      </div>
     </div>
     <script>
-      document.addEventListener('DOMContentLoaded', function() {
-        const jwtToken = localStorage.getItem('jwtToken');
-        if (!jwtToken) {
-          alert('请先登录');
-          window.location.href = 'login.html';
-          return;
-        }
-      
-        // 获取商品数据
-        // 修改fetchProducts函数
-        async function fetchProducts() {
-            try {
-                const jwtToken = localStorage.getItem('jwtToken');
-                const response = await fetch('http://localhost:9527/goods/getByUserId', {
-                    method: 'GET',
-                    headers: {
-                        'Authorization': `Bearer ${jwtToken}`,
-                        'Content-Type': 'application/json'
-                    }
-                });
-                
-                console.log('响应状态:', response.status); // 调试用
-                if (!response.ok) {
-                    throw new Error(`请求失败: ${response.status}`);
-                }
-                
-                const result = await response.json();
-                console.log('返回数据:', result); // 调试用
-                
-                if (result.code !== "200") {
-                    throw new Error(result.message || '获取商品失败');
-                }
-                
-                return result.data; // 返回data部分
-            } catch (error) {
-                console.error('获取商品数据错误:', error);
-                alert('获取商品数据失败: ' + error.message);
-                return { products: [], total: 0 };
+        // 添加滚动监听，当页面滚动时调整头部内边距
+        window.addEventListener('scroll', function () {
+            const header = document.querySelector('.fixed-header');
+            if (window.scrollY > 0) {
+                header.classList.add('scrolled');
+            } else {
+                header.classList.remove('scrolled');
             }
-        }
-        
-        // 修改初始化加载部分
-        document.addEventListener('DOMContentLoaded', async function() {
+        });
+
+        document.addEventListener('DOMContentLoaded', async function () {
             const jwtToken = localStorage.getItem('jwtToken');
             if (!jwtToken) {
                 alert('请先登录');
                 window.location.href = 'login.html';
                 return;
             }
-            
-            try {
-                console.log('开始获取商品数据...'); // 调试用
-                const data = await fetchProducts();
-                console.log('获取到的数据:', data); // 调试用
-                
-                if (data && data.products) {
-                    renderProducts(data);
-                    // 在标题下方显示商品总数
-                    const titleElement = document.querySelector('h1.text-2xl');
-                    if (titleElement) {
-                        titleElement.insertAdjacentHTML('afterend', 
-                            `<p class="text-gray-600 mb-6">共 ${data.total} 件商品</p>`);
+
+            // 获取商品数据
+            async function fetchProducts() {
+                try {
+                    const jwtToken = localStorage.getItem('jwtToken');
+                    const response = await fetch('http://localhost:9527/goods/getByUserId', {
+                        method: 'GET',
+                        headers: {
+                            'Authorization': `Bearer ${jwtToken}`,
+                            'Content-Type': 'application/json'
+                        }
+                    });
+
+                    console.log('响应状态:', response.status); // 调试用
+                    if (!response.ok) {
+                        throw new Error(`请求失败: ${response.status}`);
                     }
+
+                    const result = await response.json();
+                    console.log('返回数据:', result); // 调试用
+
+                    if (result.code !== "200") {
+                        throw new Error(result.message || '获取商品失败');
+                    }
+
+                    return result.data; // 返回data部分
+                } catch (error) {
+                    console.error('获取商品数据错误:', error);
+                    alert('获取商品数据失败: ' + error.message);
+                    return { products: [], total: 0 };
                 }
-            } catch (error) {
-                console.error('初始化加载错误:', error);
-                alert('加载商品失败: ' + error.message);
             }
-        });
-      
-        // 渲染商品列表
-        // 修改renderProducts函数
-        function renderProducts(data) {
-            const container = document.querySelector('.grid');
-            container.innerHTML = '';
-            
-            // 直接使用data.products而不是products.data
-            if (!data.products || !Array.isArray(data.products)) {
-                console.error('商品数据格式不正确:', data);
-                return;
-            }
-            
-            data.products.forEach(product => {
-                // 处理photos为null的情况
-                const photoUrl = product.photos || 
-                    'https://aidev.gemcoder.com/staticResource/echoAiSystemImages/e2b6bdb306e7c0cdf7cfd01c8575cd9c.png';
-                
-                const status = parseInt(product.status);
-                const productCard = `
-                <div class="product-card bg-white rounded-lg shadow-md overflow-hidden transition-all duration-300">
-                    <div class="relative">
-                        <img src="${photoUrl}"
-                             alt="${product.productName}"
-                             class="w-full h-48 object-cover">
-                    </div>
-                    <div class="p-4">
-                        <h3 class="text-lg font-semibold text-gray-800 mb-2">${product.productName}</h3>
-                        <p class="text-gray-600 text-sm mb-2">${product.description || '暂无描述'}</p>
-                        <div class="flex justify-between items-center">
-                            <span class="text-red-500 font-bold">¥${product.price?.toFixed(2) || '0.00'}</span>
-                            <div class="flex items-center space-x-2">
-                                <span class="text-xs text-gray-500 mr-1">${status === 1 ? '上架中' : '已下架'}</span>
-                                <button onclick="editProduct(${product.productId})" class="text-blue-600 hover:text-blue-800">
+
+            // 渲染商品列表
+            function renderProducts(data) {
+                const container = document.getElementById('cart-items-container');
+                container.innerHTML = '';
+
+                if (!data.products || !Array.isArray(data.products)) {
+                    console.error('商品数据格式不正确:', data);
+                    return;
+                }
+
+                if (data.products.length === 0) {
+                    container.innerHTML = `
+                        <div class="p-8 text-center text-gray-500">
+                            <i class="fas fa-box-open text-4xl mb-4"></i>
+                            <p class="text-xl">您还没有发布商品</p>
+                            <p class="text-sm mt-2">快去发布心仪的商品吧</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                data.products.forEach(product => {
+                    const photoUrl = product.photos ||
+                        'https://aidev.gemcoder.com/staticResource/echoAiSystemImages/e2b6bdb306e7c0cdf7cfd01c8575cd9c.png';
+                    const status = parseInt(product.status);
+                    const productCard = `
+                        <div class="cart-item p-4 border-b border-gray-200 flex items-center">
+                            <input
+                                type="checkbox"
+                                class="product-checkbox h-5 w-5 text-blue-600 rounded mr-4"
+                                data-product-id="${product.productId}"
+                            />
+                            <img
+                                src="${photoUrl}"
+                                alt="${product.productName}"
+                                class="w-24 h-24 object-cover rounded mr-4"
+                            />
+                            <div class="flex-1">
+                                <h3 class="text-lg font-semibold text-gray-800 mb-1">${product.productName}</h3>
+                                <p class="text-gray-600 text-sm mb-2">${product.description || '暂无描述'}</p>
+                                <span class="text-red-500 font-bold">¥${product.price?.toFixed(2) || '0.00'}</span>
+                            </div>
+                            <div class="flex items-center space-x-4">
+                                <label class="inline-flex items-center cursor-pointer">
+                                    <input
+                                        type="checkbox"
+                                        ${status === 1 ? 'checked' : ''}
+                                        onchange="toggleStatus(${product.productId}, this)"
+                                        class="toggle-checkbox absolute opacity-0 pointer-events-none"
+                                    />
+                                    <span class="toggle-label relative inline-block w-10 h-6 rounded-full bg-gray-300"></span>
+                                    <span class="ml-2 text-sm font-medium">${status === 1 ? '上架中' : '已下架'}</span>
+                                </label>
+                                <button data-product-id="${product.productId}" class="text-blue-600 hover:text-blue-800 edit-btn">
                                     <i class="fas fa-edit"></i>
                                 </button>
                                 <button onclick="deleteProduct(${product.productId})" class="text-red-600 hover:text-red-800">
@@ -251,88 +320,170 @@
                                 </button>
                             </div>
                         </div>
-                    </div>
-                </div>
-                `;
-                container.insertAdjacentHTML('beforeend', productCard);
-            });
-            
-            // 更新商品总数显示
-            const titleElement = document.querySelector('h1.text-2xl');
-            if (titleElement) {
-                const countElement = document.querySelector('.product-count');
-                if (!countElement) {
-                    titleElement.insertAdjacentHTML('afterend', 
-                        `<p class="text-gray-600 mb-6 product-count">共 ${data.total} 件商品</p>`);
-                } else {
-                    countElement.textContent = `共 ${data.total} 件商品`;
+                    `;
+                    container.insertAdjacentHTML('beforeend', productCard);
+                });
+
+                // 事件委托处理编辑按钮点击事件
+                const cartItemsContainer = document.getElementById('cart-items-container');
+                cartItemsContainer.addEventListener('click', function (event) {
+                    const editBtn = event.target.closest('.edit-btn');
+                    if (editBtn) {
+                        const productId = editBtn.dataset.productId;
+                        editProduct(productId);
+                    }
+                });
+
+                // 更新商品总数显示
+                const titleElement = document.querySelector('h1.text-2xl');
+                if (titleElement) {
+                    const countElement = document.querySelector('.product-count');
+                    if (!countElement) {
+                        titleElement.insertAdjacentHTML('afterend',
+                            `<p class="text-gray-600 mb-6 product-count">共 ${data.total} 件商品</p>`);
+                    } else {
+                        countElement.textContent = `共 ${data.total} 件商品`;
+                    }
+                }
+
+                // 全选逻辑
+                const selectAllCheckbox = document.getElementById('select-all');
+                const productCheckboxes = document.querySelectorAll('.product-checkbox');
+
+                selectAllCheckbox.addEventListener('change', function () {
+                    productCheckboxes.forEach(checkbox => {
+                        checkbox.checked = this.checked;
+                    });
+                });
+
+                productCheckboxes.forEach(checkbox => {
+                    checkbox.addEventListener('change', function () {
+                        selectAllCheckbox.checked = Array.from(productCheckboxes).every(cb => cb.checked);
+                    });
+                });
+            }
+
+            // 初始化加载
+            try {
+                console.log('开始获取商品数据...'); // 调试用
+                const data = await fetchProducts();
+                console.log('获取到的数据:', data); // 调试用
+
+                if (data && data.products) {
+                    renderProducts(data);
+                    // 在标题下方显示商品总数
+                    const titleElement = document.querySelector('h1.text-2xl');
+                    if (titleElement) {
+                        titleElement.insertAdjacentHTML('afterend',
+                            `<p class="text-gray-600 mb-6">共 ${data.total} 件商品</p>`);
+                    }
+                }
+            } catch (error) {
+                console.error('初始化加载错误:', error);
+                alert('加载商品失败: ' + error.message);
+            }
+
+            // 编辑商品函数
+            function editProduct(productId) {
+                window.location.href = `updateProduct.html?id=${productId}`;
+            }
+
+            // 删除商品函数
+            async function deleteProduct(productId) {
+                try {
+                    console.log('deleteProduct 函数被调用，传入的 productId:', productId);
+                    if (!confirm('确定要删除这个商品吗？')) return;
+
+                    const jwtToken = localStorage.getItem('jwtToken');
+                    if (!jwtToken) {
+                        console.error('JWT Token 不存在');
+                        alert('请先登录');
+                        window.location.href = 'login.html';
+                        return;
+                    }
+
+                    const parsedProductId = parseInt(productId);
+                    if (isNaN(parsedProductId)) {
+                        console.error('传入的 productId 不是有效的数字:', productId);
+                        alert('商品 ID 无效');
+                        return;
+                    }
+
+                    const productIds = [parsedProductId];
+                    const requestBody = new URLSearchParams({ productId: productIds });
+                    console.log('即将发送的删除请求体:', requestBody.toString());
+
+                    const response = await fetch('http://localhost:9527/goods/deleteProduct', {
+                        method: 'DELETE',
+                        headers: {
+                            'Authorization': `Bearer ${jwtToken}`,
+                            'Content-Type': 'application/x-www-form-urlencoded'
+                        },
+                        body: requestBody
+                    });
+
+                    console.log('删除请求响应状态:', response.status);
+                    if (!response.ok) {
+                        throw new Error(`请求失败，状态码: ${response.status}`);
+                    }
+
+                    const result = await response.json();
+                    console.log('删除请求响应数据:', result);
+                    if (result.code === "200") {
+                        alert('删除成功');
+                        window.location.reload();
+                    } else {
+                        throw new Error(result.message || '删除失败');
+                    }
+                } catch (error) {
+                    console.error('删除商品时出错:', error);
+                    alert(error.message || '删除商品失败');
                 }
             }
-        }
-      
-        // 初始化加载
-        fetchProducts().then(renderProducts);
-      });
-      
-      // 编辑商品函数
-      function editProduct(productId) {
-        window.location.href = `updateProduct.html?id=${productId}`;
-      }
-      
-      // 删除商品函数
-      async function deleteProduct(productId) {
-        if (!confirm('确定要删除这个商品吗？')) return;
-        
-        try {
-          const jwtToken = localStorage.getItem('jwtToken');
-          const response = await fetch('http://localhost:9527/goods/deleteProduct', {
-            method: 'DELETE',
-            headers: {
-              'Authorization': `Bearer ${jwtToken}`,
-              'Content-Type': 'application/x-www-form-urlencoded'
-            },
-            body: `productId=${productId}`
-          });
-          
-          const result = await response.json();
-          if (result.code === "200") {
-            alert('删除成功');
-            window.location.reload();
-          } else {
-            throw new Error(result.message || '删除失败');
-          }
-        } catch (error) {
-          console.error('删除商品错误:', error);
-          alert(error.message || '删除商品失败');
-        }
-      }
-    </script>
-    <style>
-        /* 修改切换按钮样式 */
-        .toggle-checkbox {
-            right: 0;
-            left: auto;
-            border-color: #10B981;
-        }
-        .toggle-checkbox:not(:checked) {
-            right: auto;
-            left: 0;
-            border-color: #D1D5DB;
-        }
-        .toggle-checkbox:checked + .toggle-label {
-            background-color: #10B981;
-        }
-        .toggle-checkbox:not(:checked) + .toggle-label {
-            background-color: #D1D5DB;
-        }
-        .toggle-label {
-            transition: all 0.3s ease-in-out;
-        }
-        .toggle-checkbox {
-            transition: all 0.3s ease-in-out;
-        }
-    </style>
-    <script>
+
+            // 将函数挂载到 window 对象
+            window.deleteProduct = deleteProduct;
+
+            // 批量删除按钮点击事件
+            const deleteSelectedBtn = document.getElementById('delete-selected');
+            deleteSelectedBtn.addEventListener('click', async function () {
+                const selectedCheckboxes = document.querySelectorAll('.product-checkbox:checked');
+                const selectedProductIds = Array.from(selectedCheckboxes).map(checkbox => parseInt(checkbox.dataset.productId));
+                console.log('选中的商品 ID:', selectedProductIds);
+
+                if (selectedProductIds.length === 0) {
+                    alert('请选择要删除的商品');
+                    return;
+                }
+
+                if (!confirm('确定要删除选中的商品吗？')) return;
+
+                try {
+                    const jwtToken = localStorage.getItem('jwtToken');
+                    const response = await fetch('http://localhost:9527/goods/deleteProduct', {
+                        method: 'DELETE',
+                        headers: {
+                            'Authorization': `Bearer ${jwtToken}`,
+                            'Content-Type': 'application/x-www-form-urlencoded'
+                        },
+                        // 使用 URLSearchParams 处理多个 productId 参数
+                        body: new URLSearchParams({ productId: selectedProductIds }) 
+                    });
+
+                    const result = await response.json();
+                    if (result.code === "200") {
+                        alert('删除成功');
+                        window.location.reload();
+                    } else {
+                        throw new Error(result.message || '删除失败');
+                    }
+                } catch (error) {
+                    console.error('批量删除商品错误:', error);
+                    alert(error.message || '批量删除商品失败');
+                }
+            });
+        });
+
         // 添加切换状态函数
         async function toggleStatus(productId, checkbox) {
             try {
@@ -345,7 +496,7 @@
                     },
                     body: `productId=${productId}`
                 });
-                
+
                 const result = await response.json();
                 if (result.code !== "200") {
                     checkbox.checked = !checkbox.checked; // 操作失败恢复原状态
@@ -358,5 +509,6 @@
             }
         }
     </script>
-  </body>
+</body>
+
 </html>

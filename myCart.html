@@ -93,217 +93,412 @@
     </div>
     <script>
       document.addEventListener('DOMContentLoaded', function () {
-          // 获取来源页面参数
-          const urlParams = new URLSearchParams(window.location.search);
-          const fromPage = urlParams.get('from');
+          let cartItems = [];
           
-          // 返回按钮点击事件
-          document.getElementById('back-btn').addEventListener('click', function() {
-              if (fromPage === 'my') {
-                  window.location.href = 'my.html';
-              } else if (fromPage === 'main') {
-                  window.location.href = 'Main.html';
-              } else {
-                  // 默认返回上一页，如果没有则返回主页
-                  if (document.referrer && document.referrer.includes(window.location.hostname)) {
+          // 确保获取所有需要的DOM元素
+          const cartItemsContainer = document.getElementById('cart-items-container');
+          const selectedCountElement = document.getElementById('selected-count');
+          const totalPriceElement = document.getElementById('total-price');
+          const selectAllCheckbox = document.getElementById('select-all');
+          const selectAllBottomCheckbox = document.getElementById('select-all-bottom');
+          const deleteSelectedBtn = document.getElementById('delete-selected');
+          const clearCartBtn = document.getElementById('clear-cart');
+          const checkoutBtn = document.getElementById('checkout-btn');
+          // 获取返回按钮
+          const backBtn = document.getElementById('back-btn');
+  
+          // 检查返回按钮是否成功获取
+          if (backBtn) {
+              backBtn.addEventListener('click', function () {
+                  try {
                       window.history.back();
+                  } catch (error) {
+                      console.error('返回上一页失败:', error);
+                  }
+              });
+          } else {
+              console.error('未找到返回按钮，ID: back-btn');
+          }
+  
+          // 在定义后立即调用加载方法
+          loadCartData(); 
+  
+          async function loadCartData() {
+              try {
+                  const jwtToken = localStorage.getItem('jwtToken');
+                  if (!jwtToken) {
+                      window.location.href = 'login.html';
+                      return;
+                  }
+  
+                  const response = await fetch('http://localhost:9527/cart/getByUserId', {
+                      headers: { 'Authorization': `Bearer ${jwtToken}` }
+                  });
+  
+                  if (response.status === 401) {
+                      localStorage.removeItem('jwtToken');
+                      window.location.href = 'login.html';
+                      return;
+                  }
+  
+                  const result = await response.json();
+                  // 修改判断条件，匹配字符串 "200"
+                  if (result.code === "200") {
+                      cartItems = result.data.map(item => ({
+                          id: item.cartId,
+                          // 使用商品名称，如果不存在则用默认值
+                          name: item.productName || `未命名商品 - ${item.productId}`, 
+                          price: item.price,
+                          quantity: item.quantity,
+                          selected: item.selected,
+                          // 确保 productId 正确赋值
+                          productId: item.productId, 
+                          // 确保图片字段处理
+                          image: item.photos?.trim() || 'https://aidev.gemcoder.com/staticResource/echoAiSystemImages/e2b6bdb306e7c0cdf7cfd01c8575cd9c.png'
+                      }));
+                      renderCartItems();
+                  }
+              } catch (error) {
+                  console.error('请求异常:', error);
+                  alert('网络请求失败');
+              }
+          }
+  
+          function renderCartItems() {
+              console.log('执行渲染，当前商品数量:', cartItems.length);
+              cartItemsContainer.innerHTML = '';
+              if (cartItems.length === 0) {
+                cartItemsContainer.innerHTML = `
+                        <div class="p-8 text-center text-gray-500">
+                            <i class="fas fa-shopping-cart text-4xl mb-4"></i>
+                            <p class="text-xl">您的购物车是空的</p>
+                            <p class="text-sm mt-2">快去挑选心仪的商品吧</p>
+                        </div>
+                    `;
+                return;
+              }
+              cartItems.forEach(function (item) {
+                // 处理 photos 字段，获取第一个图片 URL
+                let imageUrl = item.image;
+                if (item.photos) {
+                  const photoUrls = item.photos.split(',');
+                  imageUrl = photoUrls[0].trim() || item.image;
+                }
+
+                var itemElement = document.createElement('div');
+                itemElement.className = 'cart-item p-4 border-b border-gray-200 flex items-center hover:bg-gray-50';
+                itemElement.dataset.id = item.id;
+                itemElement.innerHTML = `
+                        <div class="flex items-center w-full">
+                            <div class="flex items-center w-1/2">
+                                <input type="checkbox" class="item-checkbox h-5 w-5 text-blue-600 rounded mr-4" ${item.selected ? 'checked' : ''}>
+                                <div class="flex-shrink-0 w-20 h-20 rounded overflow-hidden">
+                                    <!-- 使用处理后的图片 URL -->
+                                    <img src="${imageUrl}" alt="${item.name}" class="w-full h-full object-cover">
+                                </div>
+                                <div class="ml-4">
+                                    <h3 class="text-lg font-medium text-gray-800">${item.name}</h3>
+                                    <p class="text-red-500 font-bold mt-1">¥${item.price.toFixed(2)}</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center justify-between w-1/2">
+                                <div class="flex items-center">
+                                    <button class="quantity-btn decrease w-8 h-8 border border-gray-300 rounded-l bg-gray-100 text-gray-600 hover:bg-gray-200">
+                                        <i class="fas fa-minus"></i>
+                                    </button>
+                                    <input type="number" min="1" value="${item.quantity}" class="quantity-input w-12 h-8 border-t border-b border-gray-300 text-center">
+                                    <button class="quantity-btn increase w-8 h-8 border border-gray-300 rounded-r bg-gray-100 text-gray-600 hover:bg-gray-200">
+                                        <i class="fas fa-plus"></i>
+                                    </button>
+                                </div>
+                                <div class="text-right">
+                                    <p class="text-gray-600">小计: <span class="text-red-500 font-bold">¥${(item.price * item.quantity).toFixed(2)}</span></p>
+                                    <button class="delete-item text-gray-400 hover:text-red-500 mt-1">
+                                        <i class="fas fa-trash-alt"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                cartItemsContainer.appendChild(itemElement);
+              });
+              updateSummary();
+          }
+          // 更新汇总信息并存储到 localStorage
+          function updateSummary() {
+              var selectedItems = cartItems.filter(function (item) {
+                return item.selected;
+              });
+              var selectedCount = selectedItems.length;
+              var totalPrice = selectedItems.reduce(function (sum, item) {
+                return sum + item.price * item.quantity;
+              }, 0);
+              selectedCountElement.textContent = selectedCount;
+              totalPriceElement.textContent = `¥${totalPrice.toFixed(2)}`;
+  
+              // 存储选中商品的总价和数量到 localStorage
+              localStorage.setItem('cartTotal', totalPrice);
+              localStorage.setItem('cartCount', selectedCount);
+  
+              // 更新全选状态
+              var allSelected = cartItems.length > 0 && cartItems.every(function (item) {
+                return item.selected;
+              });
+              selectAllCheckbox.checked = allSelected;
+              selectAllBottomCheckbox.checked = allSelected;
+          }
+  
+          // 初始化
+          renderCartItems();
+          // 事件委托处理（只保留一个事件监听器）
+          cartItemsContainer.addEventListener('click', async function (e) {
+              var target = e.target;
+              var itemElement = target.closest('.cart-item');
+              if (!itemElement) return;
+              var itemId = parseInt(itemElement.dataset.id);
+              var item = cartItems.find(function (item) {
+                return item.id === itemId;
+              });
+              if (!item) return;
+  
+              // 处理复选框选择
+              if (target.classList.contains('item-checkbox')) {
+                item.selected = target.checked;
+                updateSummary();
+              }
+  
+              // 处理删除单个商品
+              if (target.classList.contains('delete-item') || target.closest('.delete-item')) {
+                if (confirm('确定要删除该商品吗？')) {
+                  try {
+                    const jwtToken = localStorage.getItem('jwtToken');
+                    if (!jwtToken) {
+                      window.location.href = 'login.html';
+                      return;
+                    }
+                    if (item.productId === undefined) {
+                      alert('未找到有效的商品 ID，无法删除');
+                      return;
+                    }
+                    // 构建单个商品删除请求的 URL
+                    const queryParams = `productId=${item.productId}`;
+                    const url = `http://localhost:9527/cart/deleteByProductId?${queryParams}`;
+                    console.log('即将发送删除请求，URL:', url);
+                    console.log('请求方法: DELETE');
+                    console.log('Authorization 头信息:', `Bearer ${jwtToken}`);
+                    const response = await fetch(url, {
+                      method: 'DELETE',
+                      headers: {
+                        'Authorization': `Bearer ${jwtToken}`
+                      }
+                    });
+
+                    console.log('删除请求响应状态:', response.status);
+                    const result = await response.json();
+                    console.log('删除请求响应结果:', result);
+
+                    if (response.status === 401) {
+                      localStorage.removeItem('jwtToken');
+                      window.location.href = 'login.html';
+                      return;
+                    }
+
+                    if (result.code === "200") {
+                      // 从本地数据中移除已删除的商品
+                      const index = cartItems.findIndex(i => i.id === itemId);
+                      if (index !== -1) {
+                        cartItems.splice(index, 1);
+                      }
+                      renderCartItems();
+                      alert('商品删除成功');
+                    } else {
+                      alert('商品删除失败: ' + result.message);
+                    }
+                  } catch (error) {
+                    console.error('删除单个商品请求异常:', error);
+                    alert('网络请求失败');
+                  }
+                }
+              }
+
+              // 处理数量减少
+              if (target.classList.contains('decrease') || target.closest('.decrease')) {
+                if (item.quantity > 1) {
+                  item.quantity--;
+                  renderCartItems();
+                }
+              }
+
+              // 处理数量增加
+              if (target.classList.contains('increase') || target.closest('.increase')) {
+                item.quantity++;
+                renderCartItems();
+              }
+          });
+  
+          // 处理输入框数量变化
+          cartItemsContainer.addEventListener('change', function (e) {
+              if (e.target.classList.contains('quantity-input')) {
+                var itemElement = e.target.closest('.cart-item');
+                var itemId = parseInt(itemElement.dataset.id);
+                var item = cartItems.find(function (item) {
+                  return item.id === itemId;
+                });
+                var newQuantity = parseInt(e.target.value);
+                if (newQuantity > 0) {
+                  item.quantity = newQuantity;
+                  renderCartItems();
+                } else {
+                  e.target.value = item.quantity;
+                }
+              }
+          });
+  
+          // 全选/取消全选
+          function handleSelectAll(checkbox) {
+              var isChecked = checkbox.checked;
+              cartItems.forEach(function (item) {
+                item.selected = isChecked;
+              });
+              renderCartItems();
+          }
+          selectAllCheckbox.addEventListener('change', function () {
+              handleSelectAll(this);
+              selectAllBottomCheckbox.checked = this.checked;
+          });
+          selectAllBottomCheckbox.addEventListener('change', function () {
+              handleSelectAll(this);
+              selectAllCheckbox.checked = this.checked;
+          });
+  
+          // 删除选中商品
+          deleteSelectedBtn.addEventListener('click', async function () {
+              var selectedItems = cartItems.filter(function (item) {
+                return item.selected;
+              });
+              if (selectedItems.length === 0) {
+                alert('请先选择要删除的商品');
+                return;
+              }
+              if (confirm(`确定要删除选中的 ${selectedItems.length} 件商品吗？`)) {
+                try {
+                  const jwtToken = localStorage.getItem('jwtToken');
+                  if (!jwtToken) {
+                    window.location.href = 'login.html';
+                    return;
+                  }
+                  // 获取选中商品的 productId 列表
+                  const productIds = selectedItems.map(item => item.productId).filter(id => id !== undefined);
+                  if (productIds.length === 0) {
+                    alert('未找到有效的商品 ID，无法删除');
+                    return;
+                  }
+                  // 构建查询参数
+                  const queryParams = productIds.map(id => `productId=${id}`).join('&');
+                  const url = `http://localhost:9527/cart/deleteByProductId?${queryParams}`;
+                  const response = await fetch(url, {
+                    method: 'DELETE',
+                    headers: {
+                      'Authorization': `Bearer ${jwtToken}`
+                    }
+                  });
+  
+                  if (response.status === 401) {
+                    localStorage.removeItem('jwtToken');
+                    window.location.href = 'login.html';
+                    return;
+                  }
+  
+                  const result = await response.json();
+                  if (result.code === "200") {
+                    // 从本地数据中移除已删除的商品
+                    cartItems = cartItems.filter(item => !item.selected);
+                    renderCartItems();
+                    alert('商品删除成功');
                   } else {
-                      window.location.href = 'Main.html';
+                    alert('商品删除失败: ' + result.message);
+                  }
+                } catch (error) {
+                  console.error('删除商品请求异常:', error);
+                  alert('网络请求失败');
+                }
+              }
+          });
+  
+          // 清空购物车
+          clearCartBtn.addEventListener('click', async function () {
+              if (cartItems.length === 0) {
+                  alert('购物车已经是空的');
+                  return;
+              }
+              if (confirm('确定要清空购物车吗？')) {
+                  try {
+                      const jwtToken = localStorage.getItem('jwtToken');
+                      if (!jwtToken) {
+                          window.location.href = 'login.html';
+                          return;
+                      }
+                      // 获取所有商品的 productId 列表
+                      const productIds = cartItems.map(item => item.productId).filter(id => id !== undefined);
+                      if (productIds.length === 0) {
+                          alert('未找到有效的商品 ID，无法清空购物车');
+                          return;
+                      }
+                      // 构建查询参数
+                      const queryParams = productIds.map(id => `productId=${id}`).join('&');
+                      const url = `http://localhost:9527/cart/deleteByProductId?${queryParams}`;
+                      console.log('即将发送清空购物车请求，URL:', url);
+                      console.log('请求方法: DELETE');
+                      console.log('Authorization 头信息:', `Bearer ${jwtToken}`);
+                      const response = await fetch(url, {
+                          method: 'DELETE',
+                          headers: {
+                              'Authorization': `Bearer ${jwtToken}`
+                          }
+                      });
+  
+                      console.log('清空购物车请求响应状态:', response.status);
+                      const result = await response.json();
+                      console.log('清空购物车请求响应结果:', result);
+  
+                      if (response.status === 401) {
+                          localStorage.removeItem('jwtToken');
+                          window.location.href = 'login.html';
+                          return;
+                      }
+  
+                      if (result.code === "200") {
+                          // 清空本地购物车数据
+                          cartItems = [];
+                          renderCartItems();
+                          alert('购物车已清空');
+                      } else {
+                          alert('清空购物车失败: ' + result.message);
+                      }
+                  } catch (error) {
+                      console.error('清空购物车请求异常:', error);
+                      alert('网络请求失败');
                   }
               }
           });
-
-        // 模拟购物车数据
-        var cartItems = [{
-          id: 1,
-          name: '高端游戏笔记本电脑',
-          price: 8999,
-          quantity: 1,
-          selected: false,
-          image: 'https://aidev.gemcoder.com/staticResource/echoAiSystemImages/82bc6b1cff06703b82cb958a0530eff2.png'
-        }, {
-          id: 2,
-          name: '无线降噪耳机',
-          price: 1299,
-          quantity: 2,
-          selected: false,
-          image: 'https://aidev.gemcoder.com/staticResource/echoAiSystemImages/8f804728a25a5f1b4e8962faf8ea613b.png'
-        }, {
-          id: 3,
-          name: '智能手表',
-          price: 1999,
-          quantity: 1,
-          selected: false,
-          image: 'https://aidev.gemcoder.com/staticResource/echoAiSystemImages/08e96e7ba53f70d8805974543bb9a99b.png'
-        }];
-        var cartItemsContainer = document.getElementById('cart-items-container');
-        var selectedCountElement = document.getElementById('selected-count');
-        var totalPriceElement = document.getElementById('total-price');
-        var selectAllCheckbox = document.getElementById('select-all');
-        var selectAllBottomCheckbox = document.getElementById('select-all-bottom');
-        var deleteSelectedBtn = document.getElementById('delete-selected');
-        var clearCartBtn = document.getElementById('clear-cart');
-        var checkoutBtn = document.getElementById('checkout-btn');
-        var backBtn = document.getElementById('back-btn');
-
-        // 返回按钮点击事件
-        backBtn.addEventListener('click', function () {
-          window.history.back();
-        });
-        // 渲染购物车商品
-        function renderCartItems() {
-          cartItemsContainer.innerHTML = '';
-          if (cartItems.length === 0) {
-            cartItemsContainer.innerHTML = "\n                        <div class=\"p-8 text-center text-gray-500\">\n                            <i class=\"fas fa-shopping-cart text-4xl mb-4\"></i>\n                            <p class=\"text-xl\">\u60A8\u7684\u8D2D\u7269\u8F66\u662F\u7A7A\u7684</p>\n                            <p class=\"text-sm mt-2\">\u5FEB\u53BB\u6311\u9009\u5FC3\u4EEA\u7684\u5546\u54C1\u5427</p>\n                        </div>\n                    ";
-            return;
-          }
-          cartItems.forEach(function (item) {
-            var itemElement = document.createElement('div');
-            itemElement.className = 'cart-item p-4 border-b border-gray-200 flex items-center hover:bg-gray-50';
-            itemElement.dataset.id = item.id;
-            itemElement.innerHTML = "\n                        <div class=\"flex items-center w-full\">\n                            <div class=\"flex items-center w-1/2\">\n                                <input type=\"checkbox\" class=\"item-checkbox h-5 w-5 text-blue-600 rounded mr-4\" ".concat(item.selected ? 'checked' : '', ">\n                                <div class=\"flex-shrink-0 w-20 h-20 rounded overflow-hidden\">\n                                    <img src=\"").concat(item.image, "\" alt=\"").concat(item.name, "\" class=\"w-full h-full object-cover\">\n                                </div>\n                                <div class=\"ml-4\">\n                                    <h3 class=\"text-lg font-medium text-gray-800\">").concat(item.name, "</h3>\n                                    <p class=\"text-red-500 font-bold mt-1\">\xA5").concat(item.price.toFixed(2), "</p>\n                                </div>\n                            </div>\n                            <div class=\"flex items-center justify-between w-1/2\">\n                                <div class=\"flex items-center\">\n                                    <button class=\"quantity-btn decrease w-8 h-8 border border-gray-300 rounded-l bg-gray-100 text-gray-600 hover:bg-gray-200\">\n                                        <i class=\"fas fa-minus\"></i>\n                                    </button>\n                                    <input type=\"number\" min=\"1\" value=\"").concat(item.quantity, "\" class=\"quantity-input w-12 h-8 border-t border-b border-gray-300 text-center\">\n                                    <button class=\"quantity-btn increase w-8 h-8 border border-gray-300 rounded-r bg-gray-100 text-gray-600 hover:bg-gray-200\">\n                                        <i class=\"fas fa-plus\"></i>\n                                    </button>\n                                </div>\n                                <div class=\"text-right\">\n                                    <p class=\"text-gray-600\">\u5C0F\u8BA1: <span class=\"text-red-500 font-bold\">\xA5").concat((item.price * item.quantity).toFixed(2), "</span></p>\n                                    <button class=\"delete-item text-gray-400 hover:text-red-500 mt-1\">\n                                        <i class=\"fas fa-trash-alt\"></i>\n                                    </button>\n                                </div>\n                            </div>\n                        </div>\n                    ");
-            cartItemsContainer.appendChild(itemElement);
-          });
-          updateSummary();
-        }
-        // 更新汇总信息
-        function updateSummary() {
-          var selectedItems = cartItems.filter(function (item) {
-            return item.selected;
-          });
-          var selectedCount = selectedItems.length;
-          var totalPrice = selectedItems.reduce(function (sum, item) {
-            return sum + item.price * item.quantity;
-          }, 0);
-          selectedCountElement.textContent = selectedCount;
-          totalPriceElement.textContent = "\xA5".concat(totalPrice.toFixed(2));
-
-          // 更新全选状态
-          var allSelected = cartItems.length > 0 && cartItems.every(function (item) {
-            return item.selected;
-          });
-          selectAllCheckbox.checked = allSelected;
-          selectAllBottomCheckbox.checked = allSelected;
-        }
-        // 初始化
-        renderCartItems();
-        // 事件委托处理
-        cartItemsContainer.addEventListener('click', function (e) {
-          var target = e.target;
-          var itemElement = target.closest('.cart-item');
-          if (!itemElement) return;
-          var itemId = parseInt(itemElement.dataset.id);
-          var item = cartItems.find(function (item) {
-            return item.id === itemId;
-          });
-          if (!item) return;
-
-          // 处理复选框选择
-          if (target.classList.contains('item-checkbox')) {
-            item.selected = target.checked;
-            updateSummary();
-          }
-
-          // 处理删除单个商品
-          if (target.classList.contains('delete-item') || target.closest('.delete-item')) {
-            var index = cartItems.findIndex(function (i) {
-              return i.id === itemId;
-            });
-            if (index !== -1) {
-              cartItems.splice(index, 1);
-              renderCartItems();
-            }
-          }
-
-          // 处理数量减少
-          if (target.classList.contains('decrease') || target.closest('.decrease')) {
-            if (item.quantity > 1) {
-              item.quantity--;
-              renderCartItems();
-            }
-          }
-
-          // 处理数量增加
-          if (target.classList.contains('increase') || target.closest('.increase')) {
-            item.quantity++;
-            renderCartItems();
-          }
-        });
-        // 处理输入框数量变化
-        cartItemsContainer.addEventListener('change', function (e) {
-          if (e.target.classList.contains('quantity-input')) {
-            var itemElement = e.target.closest('.cart-item');
-            var itemId = parseInt(itemElement.dataset.id);
-            var item = cartItems.find(function (item) {
-              return item.id === itemId;
-            });
-            var newQuantity = parseInt(e.target.value);
-            if (newQuantity > 0) {
-              item.quantity = newQuantity;
-              renderCartItems();
-            } else {
-              e.target.value = item.quantity;
-            }
-          }
-        });
-        // 全选/取消全选
-        function handleSelectAll(checkbox) {
-          var isChecked = checkbox.checked;
-          cartItems.forEach(function (item) {
-            item.selected = isChecked;
-          });
-          renderCartItems();
-        }
-        selectAllCheckbox.addEventListener('change', function () {
-          handleSelectAll(this);
-          selectAllBottomCheckbox.checked = this.checked;
-        });
-        selectAllBottomCheckbox.addEventListener('change', function () {
-          handleSelectAll(this);
-          selectAllCheckbox.checked = this.checked;
-        });
-        // 删除选中商品
-        deleteSelectedBtn.addEventListener('click', function () {
-          var selectedItems = cartItems.filter(function (item) {
-            return item.selected;
-          });
-          if (selectedItems.length === 0) {
-            alert('请先选择要删除的商品');
-            return;
-          }
-          if (confirm("\u786E\u5B9A\u8981\u5220\u9664\u9009\u4E2D\u7684 ".concat(selectedItems.length, " \u4EF6\u5546\u54C1\u5417\uFF1F"))) {
-            for (var i = cartItems.length - 1; i >= 0; i--) {
-              if (cartItems[i].selected) {
-                cartItems.splice(i, 1);
+  
+          // 结算按钮
+          checkoutBtn.addEventListener('click', function () {
+              var selectedItems = cartItems.filter(function (item) {
+                return item.selected;
+              });
+              if (selectedItems.length === 0) {
+                alert('请先选择要结算的商品');
+                return;
               }
-            }
-            renderCartItems();
-          }
-        });
-        // 清空购物车
-        clearCartBtn.addEventListener('click', function () {
-          if (cartItems.length === 0) {
-            alert('购物车已经是空的');
-            return;
-          }
-          if (confirm('确定要清空购物车吗？')) {
-            cartItems.length = 0;
-            renderCartItems();
-          }
-        });
-        // 结算按钮
-        checkoutBtn.addEventListener('click', function () {
-          var selectedItems = cartItems.filter(function (item) {
-            return item.selected;
+              alert("\u5DF2\u63D0\u4EA4\u8BA2\u5355\uFF0C\u603B\u91D1\u989D: \xA5".concat(totalPriceElement.textContent.substring(1)));
+              // 这里可以添加实际的订单提交逻辑
           });
-          if (selectedItems.length === 0) {
-            alert('请先选择要结算的商品');
-            return;
-          }
-          alert("\u5DF2\u63D0\u4EA4\u8BA2\u5355\uFF0C\u603B\u91D1\u989D: \xA5".concat(totalPriceElement.textContent.substring(1)));
-          // 这里可以添加实际的订单提交逻辑
-        });
-      });
+      })();
+      </script>
+
+      
+
     </script>
   </body>
 </html>

@@ -181,9 +181,10 @@
                     </div>
                     <span class="text-gray-600 text-sm ml-2"> 4.8分 </span>
                   </div>
-                  <p class="text-gray-600 text-sm mt-1">
+                  <!-- 移除下面这一行描述信息 -->
+                  <!-- <p class="text-gray-600 text-sm mt-1">
                     专业音频设备制造商，10年品质保证
-                  </p>
+                  </p> -->
                 </div>
                 <button
                   class="btn-action bg-white border border-blue-500 text-blue-500 hover:bg-blue-50 px-4 py-2 rounded-lg"
@@ -243,12 +244,74 @@
       if (colorButtons.length > 0) {
         colorButtons[0].click();
       }
-      // 加入购物车功能
-      document.querySelector('.bg-blue-600').addEventListener('click', function () {
-        var quantity = document.getElementById('quantity').value;
-        alert("\u5DF2\u6210\u529F\u5C06 ".concat(quantity, " \u4EF6\u5546\u54C1\u52A0\u5165\u8D2D\u7269\u8F66"));
-        // 这里可以添加实际的购物车逻辑
+      // 加入购物车功能修改
+      const addToCartButton = document.querySelector('.bg-blue-600');
+      // 克隆按钮移除所有事件监听器
+      const newButton = addToCartButton.cloneNode(true);
+      addToCartButton.replaceWith(newButton);
+
+      // 绑定新的事件监听器
+      newButton.addEventListener('click', async function() {
+          const button = this;
+          button.disabled = true; // 禁用按钮防止重复点击
+          
+          try {
+              const quantity = parseInt(document.getElementById('quantity').value);
+              const productId = new URLSearchParams(window.location.search).get('productId');
+              
+              if (!productId) {
+                  alert('商品ID不存在');
+                  return;
+              }
+
+              const response = await fetch('http://localhost:9527/cart/addProductToCart', {
+                  method: 'POST',
+                  headers: {
+                      'Authorization': `Bearer ${getJwtToken()}`,
+                      'Content-Type': 'application/json'
+                  },
+                  body: JSON.stringify({
+                      productId: productId,
+                      quantity: quantity,
+                      selected: true,
+                      status: 1,
+                      price: parseFloat(document.querySelector('.text-red-600').textContent.replace('¥', '')), // 保留原有价格字段
+                      photos: window.productInfo?.photos || "", // 新增图片字段
+                      createdAt: new Date().toISOString(),
+                      updatedAt: new Date().toISOString()
+                  })
+              });
+
+              const result = await response.json();
+              
+              if (response.status === 401) {
+                  localStorage.removeItem('jwtToken');
+                  window.location.href = 'login.html';
+                  return;
+              }
+
+              if (result.code === 200) {
+                  // 更新本地购物车逻辑
+                  cart.items.push({
+                      productId: productId,
+                      quantity: quantity,
+                      price: parseFloat(document.querySelector('.text-red-600').textContent.replace('¥', ''))
+                  });
+                  cart.total = cart.items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+                  updateCartDisplay();
+                  saveCart();
+                  alert(result.message || '操作成功');
+              } else {
+                  alert(result.message || `操作失败，错误码：${result.code}`);
+              }
+          } catch (error) {
+              console.error('请求异常:', error);
+              alert(error.message || '网络请求异常');
+          } finally {
+              button.disabled = false; // 最后重新启用按钮
+          }
       });
+
       // 立即购买功能
       document.querySelector('.bg-red-600').addEventListener('click', function () {
         var quantity = document.getElementById('quantity').value;
@@ -302,10 +365,144 @@
         total: 0
       };
 
+      // 获取JWT Token
+      function getJwtToken() {
+        return localStorage.getItem('jwtToken');
+      }
+
+      // 获取商品信息
+      async function fetchProductInfo(productId) {
+        try {
+          const response = await fetch(`http://localhost:9527/goods/selectByPrimaryKey?productId=${productId}`, {
+            headers: {
+              'Authorization': `Bearer ${getJwtToken()}`
+            }
+          });
+          
+          if (response.status === 401) {
+            localStorage.removeItem('jwtToken');
+            window.location.href = 'login.html';
+            return null;
+          }
+          
+          return await response.json();
+        } catch (error) {
+          console.error('获取商品信息失败:', error);
+          return null;
+        }
+      }
+
+      // 添加到购物车API
+      async function addToCartAPI(productData, quantity) {
+          const productId = new URLSearchParams(window.location.search).get('productId');
+          const requestData = {
+              productId: productId,  // 使用从URL获取的productId
+              quantity: quantity,
+              selected: true,
+              status: 1,
+              createdAt: new Date().toISOString(),
+              updatedAt: new Date().toISOString()
+          };
+      
+          try {
+              const response = await fetch('http://localhost:9527/cart/addProductToCart', {
+                  method: 'POST',
+                  headers: {
+                      'Authorization': `Bearer ${getJwtToken()}`,
+                      'Content-Type': 'application/json'
+                  },
+                  body: JSON.stringify(requestData)
+              });
+      
+              if (response.status === 401) {
+                  localStorage.removeItem('jwtToken');
+                  window.location.href = 'login.html';
+                  return false;
+              }
+      
+              return await response.json();
+          } catch (error) {
+              console.error('添加到购物车失败:', error);
+              return false;
+          }
+      }
+s
+      // 加入购物车功能修改
+      document.querySelector('.bg-blue-600').addEventListener('click', async function() {
+          const button = this;
+          button.disabled = true; // 禁用按钮防止重复点击
+          const quantity = parseInt(document.getElementById('quantity').value);
+          const productId = new URLSearchParams(window.location.search).get('productId');
+          
+          if (!productId) {
+              alert('商品ID不存在');
+              button.disabled = false; // 重新启用按钮
+              return;
+          }
+
+          try {
+              // 调用接口获取商品信息
+              const productInfoResponse = await fetch(`http://localhost:9527/goods/selectByPrimaryKey?productId=${productId}`, {
+                  headers: {
+                      'Authorization': `Bearer ${getJwtToken()}`
+                  }
+              });
+
+              if (productInfoResponse.status === 401) {
+                  localStorage.removeItem('jwtToken');
+                  window.location.href = 'login.html';
+                  return;
+              }
+
+              const productInfoResult = await productInfoResponse.json();
+              if (!productInfoResult.data) {
+                  throw new Error(productInfoResult.message || '获取商品信息失败');
+              }
+
+              const productName = productInfoResult.data.productName;
+
+              // 调用API添加到购物车
+
+              const result = await addToCartAPI(productId, productName, quantity);
+              
+              if (!result) {
+                  alert('添加到购物车失败');
+                  return;
+              }
+
+              // 更新本地购物车显示
+              cart.items.push({
+                  productId: productId,
+                  productName: productName, // 添加 productName
+                  quantity: quantity,
+                  price: parseFloat(document.querySelector('.text-red-600').textContent.replace('¥', ''))
+              });
+              
+              cart.total = cart.items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+              updateCartDisplay();
+              saveCart();
+              
+              // 完全移除前端固定的成功提示
+              // 只显示后端返回的成功提示（如果有）
+              if (result.message) {
+                  alert(result.message);
+              }
+          } catch (error) {
+              console.error('添加到购物车出错:', error);
+              alert(error.message);
+          } finally {
+              button.disabled = false; // 最后重新启用按钮
+          }
+      });
+
       // 更新购物车显示
       function updateCartDisplay() {
-        document.getElementById('cart-count').textContent = cart.items.reduce((sum, item) => sum + item.quantity, 0);
-        document.getElementById('cart-total').textContent = `¥${cart.total.toFixed(2)}`;
+        // 从 localStorage 获取选中商品的总价和数量
+        const cartTotal = localStorage.getItem('cartTotal') || 0;
+        const cartCount = localStorage.getItem('cartCount') || 0;
+
+        document.getElementById('cart-count').textContent = cartCount;
+        document.getElementById('cart-total').textContent = `¥${parseFloat(cartTotal).toFixed(2)}`;
       }
 
       // 从localStorage加载购物车数据
@@ -325,26 +522,7 @@
       // 初始化时加载购物车
       document.addEventListener('DOMContentLoaded', function() {
         loadCart();
-      });
-
-      // 加入购物车功能修改
-      document.querySelector('.bg-blue-600').addEventListener('click', function() {
-        const quantity = parseInt(document.getElementById('quantity').value);
-        const price = parseFloat(document.querySelector('.text-red-600').textContent.replace('¥', ''));
-        
-        // 添加到购物车
-        cart.items.push({
-          productId: new URLSearchParams(window.location.search).get('productId'),
-          quantity: quantity,
-          price: price
-        });
-        
-        // 计算总价
-        cart.total = cart.items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-        
-        updateCartDisplay();
-        saveCart();  // 保存到localStorage
-        alert(`已成功将 ${quantity} 件商品加入购物车`);
+        updateCartDisplay(); // 调用更新显示函数
       });
 
       // 查看购物车按钮事件
@@ -355,3 +533,155 @@
     </script>
   </body>
 </html>
+
+<script>
+  // 获取商品信息并渲染到页面
+  async function loadAndRenderProduct() {
+    console.log('开始执行 loadAndRenderProduct 函数');
+    const productId = new URLSearchParams(window.location.search).get('productId');
+    if (!productId) {
+      alert('商品ID不存在');
+      window.location.href = 'Main.html';
+      return;
+    }
+
+    try {
+      console.log('开始请求商品信息接口');
+      const response = await fetch(`http://localhost:9527/goods/selectByPrimaryKey?productId=${productId}`, {
+          headers: {
+              'Authorization': `Bearer ${getJwtToken()}`
+          }
+      });
+      
+      console.log('商品信息接口响应状态:', response.status);
+      if (response.status === 401) {
+          localStorage.removeItem('jwtToken');
+          window.location.href = 'login.html';
+          return;
+      }
+
+      const result = await response.json();
+      console.log('商品信息接口返回结果:', result);
+      
+      // 修改这里：直接检查data是否存在，不再检查code
+      if (!result.data) {
+          throw new Error(result.message || '获取商品信息失败');
+      }
+
+      const productInfo = result.data;
+      window.currentProductPrice = productInfo.price; 
+      window.productInfo = productInfo; // 新增：保存完整商品信息到全局变量
+      
+      // 渲染商品数据到页面
+      document.querySelector('.text-3xl.font-bold').textContent = productInfo.productName;
+      document.querySelector('.text-red-600').textContent = `¥${productInfo.price}`;
+      document.querySelector('.line-through').textContent = `¥${Math.round(productInfo.price * 1.2)}`; // 四舍五入
+      document.querySelector('.text-gray-600.leading-relaxed').textContent = productInfo.description;
+      
+      // 处理 photos 字段，按逗号分隔获取图片 URL 数组
+      const photoUrls = productInfo.photos ? productInfo.photos.split(',') : [];
+
+      // 渲染主图
+      const mainImage = document.querySelector('.product-image');
+      mainImage.src = photoUrls[0] || 'https://aidev.gemcoder.com/staticResource/echoAiSystemImages/8db8017584698e378a3696bacdacae0f.png';
+
+      // 渲染缩略图
+      const thumbnails = document.querySelectorAll('.w-20.h-20');
+      thumbnails.forEach((thumbnail, index) => {
+        thumbnail.src = photoUrls[index] || (() => {
+          switch(index) {
+            case 0:
+              return 'https://aidev.gemcoder.com/staticResource/echoAiSystemImages/d82f8b107d0ebaaaf8a8fb47fc80a9b2.png';
+            case 1:
+              return 'https://aidev.gemcoder.com/staticResource/echoAiSystemImages/233c090e6456af461d236c06c3bb4bfa.png';
+            case 2:
+              return 'https://aidev.gemcoder.com/staticResource/echoAiSystemImages/079de799d14f51d9e4958cdc1b6e0b9a.png';
+            default:
+              return 'https://aidev.gemcoder.com/staticResource/echoAiSystemImages/8db8017584698e378a3696bacdacae0f.png';
+          }
+        })();
+
+        // 为缩略图添加点击事件监听器
+        thumbnail.addEventListener('click', function() {
+          mainImage.src = this.src;
+          // 高亮当前选中的缩略图
+          thumbnails.forEach(img => {
+            img.classList.remove('border-blue-500');
+            img.classList.add('border-transparent');
+          });
+          this.classList.remove('border-transparent');
+          this.classList.add('border-blue-500');
+        });
+      });
+
+      // 调用获取商家信息的接口
+      console.log('准备调用 fetchSellerInfo 函数');
+      await fetchSellerInfo();
+      console.log('fetchSellerInfo 函数调用完成');
+    } catch (error) {
+      console.error('加载商品信息失败:', error);
+      alert(error.message);
+    }
+  }
+
+  // 获取商家信息
+  async function fetchSellerInfo() {
+    console.log('开始执行 fetchSellerInfo 函数');
+    try {
+      console.log('开始请求商家信息接口');
+      const response = await fetch('http://localhost:9527/user/getAll', {
+        headers: {
+          'Authorization': `Bearer ${getJwtToken()}`
+        }
+      });
+
+      console.log('商家信息接口响应状态:', response.status);
+      if (response.status === 401) {
+        localStorage.removeItem('jwtToken');
+        window.location.href = 'login.html';
+        return;
+      }
+
+      const result = await response.json();
+      console.log('获取到的商家信息:', result);
+      if (result.code === "200" && result.data) {
+        const sellerInfo = result.data;
+        // 渲染商家信息
+        // 渲染商家头像
+        document.querySelector('.w-16.h-16 img').src = sellerInfo.avatar 
+          ? `路径前缀/${sellerInfo.avatar}` 
+          : 'https://aidev.gemcoder.com/staticResource/echoAiSystemImages/f2f57a506ef029495434dae648af1cf0.png';
+        // 使用更精准的选择器来定位商家名称元素
+        const sellerNameElement = document.querySelector('.p-6.border-t.border-gray-200 .text-lg.font-semibold');
+        if (sellerNameElement) {
+          sellerNameElement.textContent = sellerInfo.username;
+        } else {
+          console.error('未找到商家名称元素，无法渲染商家名称');
+        }
+        // 这里假设信用分转换为评分，可根据实际情况调整
+        const creditScore = sellerInfo.creditScore || 0;
+        const rating = Math.min(5, Math.floor(creditScore / 20));
+        const starHTML = Array(rating).fill('<i class="fas fa-star"></i>').join('') + 
+                         (creditScore % 20 >= 10 ? '<i class="fas fa-star-half-alt"></i>' : '') +
+                         Array(5 - Math.ceil(creditScore / 20)).fill('<i class="far fa-star"></i>').join('');
+        // 渲染商家评分
+        document.querySelector('.flex.text-yellow-400.text-sm').innerHTML = starHTML;
+        // 渲染商家评分文字
+        document.querySelector('.text-gray-600.text-sm.ml-2').textContent = `${(creditScore / 20).toFixed(1)}分`;
+        // 移除电话、邮箱和额外描述信息的渲染逻辑
+      } else {
+        console.error('获取商家信息失败:', result.message);
+      }
+    } catch (error) {
+      console.error('获取商家信息失败:', error);
+      alert('获取商家信息失败');
+    }
+  }
+
+  // 在DOM加载完成后执行
+  document.addEventListener('DOMContentLoaded', function() {
+    console.log('DOM 加载完成，开始执行初始化逻辑');
+    loadCart();
+    loadAndRenderProduct();  // 新增：加载并渲染商品数据
+  });
+</script>

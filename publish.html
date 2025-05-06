@@ -18,6 +18,7 @@
         .upload-area:hover {
             border-color: #3b82f6;
         }
+
         .visually-hidden {
             position: absolute;
             width: 1px;
@@ -29,6 +30,25 @@
             white-space: nowrap;
             border: 0;
         }
+
+        /* 新增返回按钮样式 */
+        .back-btn {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.5rem 1rem;
+            border-radius: 0.375rem;
+            background-color: #f3f4f6;
+            color: #374151;
+            transition: background-color 0.3s ease;
+        }
+
+        .back-btn:hover {
+            background-color: #e5e7eb;
+        }
+
+        .back-btn i {
+            margin-right: 0.5rem;
+        }
     </style>
     <!-- 移除阿里云 OSS SDK 引入 -->
 </head>
@@ -37,9 +57,9 @@
     <div class="container mx-auto px-4 py-8 max-w-3xl">
         <!-- 返回按钮 -->
         <div class="mb-6">
-            <a href="javascript:void(0);" onclick="history.back()"
-                class="text-blue-500 hover:text-blue-700">
-                <i class="fas fa-arrow-left mr-2"> </i>
+            <!-- 修改返回按钮 -->
+            <a href="javascript:void(0);" onclick="history.back()" class="back-btn">
+                <i class="fas fa-arrow-left"></i>
                 返回
             </a>
         </div>
@@ -139,9 +159,8 @@
             var imageInput = document.getElementById('productImages');
             var imagePreview = document.getElementById('imagePreview');
             var imageUrls = []; // 存储上传后的图片URL
-            
+    
             // 获取OSS配置
-            // 修改获取OSS配置的函数
             async function getOssConfig() {
                 try {
                     const response = await fetch('http://localhost:9527/goods/getOssConfig', {
@@ -153,44 +172,43 @@
                         const errorData = await response.json();
                         throw new Error(errorData.message || '获取OSS配置失败');
                     }
-                    const config = await response.json();
-                    
-                    // 添加region验证
-                    if (!config.region) {
-                        throw new Error('OSS配置中region不能为空');
-                    }
-                    return config;
+                    return await response.json();
                 } catch (error) {
                     console.error('获取OSS配置错误:', error);
                     throw error;
                 }
             }
-
+    
             // 上传图片到OSS
             async function uploadToOss(file) {
                 try {
                     const config = await getOssConfig();
-                    console.log('获取到的OSS配置:', config); // 添加调试日志
-                    
-                    // 添加参数验证
-                    if (!config.region || !config.accessKeyId || !config.bucket) {
-                        throw new Error('OSS配置不完整');
-                    }
-                    
-                    const client = new OSS({
-                        region: config.region,
-                        accessKeyId: config.accessKeyId,
-                        accessKeySecret: config.accessKeySecret,
-                        bucket: config.bucket,
-                        stsToken: config.securityToken,
-                        // 添加超时和重试配置
-                        timeout: 30000,
-                        maxRetries: 3
+                    console.log('获取到的OSS配置:', config);
+    
+                    const fileName = `${Date.now()}_${file.name}`;
+                    const formData = new FormData();
+                    formData.append('OSSAccessKeyId', config.accessId);
+                    formData.append('policy', config.policy);
+                    formData.append('signature', config.signature);
+                    // 确保 dir 以斜杠结尾，若 dir 为空字符串则保持不变
+                    const dir = config.dir.endsWith('/') ? config.dir : config.dir ? `${config.dir}/` : '';
+                    formData.append('key', `${dir}${fileName}`);
+                    formData.append('file', file);
+    
+                    const response = await fetch(config.host, {
+                        method: 'POST',
+                        body: formData
                     });
-                    
-                    const fileName = `products/${Date.now()}_${file.name}`;
-                    const result = await client.put(fileName, file);
-                    return result.url;
+    
+                    if (response.status === 204) {
+                        // 拼接图片 URL，确保路径格式正确
+                        const imgUrl = `${config.host}/${dir}${fileName}`;
+                        console.log('生成的图片 URL:', imgUrl);
+                        return imgUrl;
+                    } else {
+                        const text = await response.text();
+                        throw new Error(`图片上传失败，状态码: ${response.status}, 响应内容: ${text}`);
+                    }
                 } catch (error) {
                     console.error('上传详细错误:', {
                         error: error.message,
@@ -199,28 +217,28 @@
                     throw error;
                 }
             }
-
+    
             // 图片上传按钮点击事件
             document.getElementById('uploadImageBtn').addEventListener('click', () => {
                 imageInput.click();
             });
-
+    
             // 图片选择后上传到OSS并预览
             imageInput.addEventListener('change', async (e) => {
                 const files = e.target.files;
                 imagePreview.innerHTML = '';
                 imageUrls = [];
-                
+    
                 for (const file of files) {
                     if (!file.type.startsWith('image/')) {
                         alert('仅支持图片文件（jpg/png等）');
                         continue;
                     }
-                    
+    
                     try {
                         const imgUrl = await uploadToOss(file);
                         imageUrls.push(imgUrl);
-                        
+    
                         const img = document.createElement('img');
                         img.src = imgUrl;
                         img.className = 'w-full h-48 object-cover rounded-md';
@@ -231,18 +249,18 @@
                     }
                 }
             });
-
+    
             // 表单提交事件
             form.addEventListener('submit', async function (e) {
                 e.preventDefault();
-
+    
                 const jwtToken = localStorage.getItem('jwtToken');
                 if (!jwtToken) {
                     alert('请先登录');
                     window.location.href = 'login.html';
                     return;
                 }
-
+    
                 // 表单验证
                 if (!document.getElementById('productName').value ||
                     !document.getElementById('productPrice').value ||
@@ -252,7 +270,7 @@
                     alert('请填写所有必填字段（包括商品分类、商品图片）');
                     return;
                 }
-
+    
                 try {
                     const response = await fetch('http://localhost:9527/goods/createProduct', {
                         method: 'POST',
@@ -266,21 +284,47 @@
                             price: document.getElementById('productPrice').value,
                             description: document.getElementById('productDescription').value,
                             status: 0,
-                            images: imageUrls // 添加图片URL数组
+                            // 将图片 URL 数组转换为以逗号分隔的字符串
+                            photos: imageUrls.join(',') 
                         })
                     });
-
+    
                     if (response.status === 401) {
                         localStorage.removeItem('jwtToken');
                         window.location.href = 'login.html';
                         return;
                     }
-
+    
                     const data = await response.json();
                     if (response.ok) {
-                        alert('商品发布成功！');
+                        const successModal = `
+                            <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
+                                <div class="bg-white rounded-lg p-6 max-w-md w-full">
+                                    <h3 class="text-lg font-semibold mb-4">发布成功！</h3>
+                                    <p class="text-gray-600 mb-4">发布商品默认未上架，请手动上架</p>
+                                    <div class="flex gap-4">
+                                        <button 
+                                            onclick="window.location.href='myProduct.html'"
+                                            class="flex-1 bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-md transition-colors"
+                                        >
+                                            前往上架
+                                        </button>
+                                        <button 
+                                            onclick="this.closest('.fixed').remove()"
+                                            class="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 py-2 px-4 rounded-md transition-colors"
+                                        >
+                                            暂不上架
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                        document.body.insertAdjacentHTML('beforeend', successModal);
+                        
                         form.reset();
                         imagePreview.innerHTML = '';
+                        // 移除原来的跳转代码
+                        // window.location.href = 'Main.html';
                     } else {
                         alert(`发布失败：${data.message || '未知错误'}`);
                     }

@@ -353,11 +353,14 @@
                     }
                     
                     // 修改这里：使用product.productId而不是product.id
-                    productCard.addEventListener('click', function() {
+                    productCard.addEventListener('click', function () {
                         window.location.href = `product.html?productId=${product.productId}`;
                     });
             
-                    let imageSrc = product.photos || 'https://picsum.photos/200/300';
+                    // 处理 photos 字段，分割成数组并取第一张图片
+                    let imageUrls = product.photos? product.photos.split(',') : [];
+                    let imageSrc = imageUrls.length > 0? imageUrls[0] : 'https://picsum.photos/200/300';
+            
                     const productName = product.productName || '未知商品';
                     const productCategory = getCategoryName(product.categoryId) || '未知分类';
                     const productPrice = product.price || 0;

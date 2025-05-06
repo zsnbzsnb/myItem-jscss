@@ -1,0 +1,363 @@
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>添加收货地址</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+      rel="stylesheet"
+      href="https://cdn.bootcdn.net/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <style>
+      .form-input {
+          transition: all 0.3s ease;
+      }
+      .form-input:focus {
+          box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.5);
+      }
+    </style>
+    <!-- 在head中添加china-region-data的CDN引用 -->
+    <script src="https://unpkg.com/china-region-data@1.0.0/dist/china-region-data.min.js"></script>
+  </head>
+  <body class="bg-gray-50 min-h-screen">
+    <div class="container mx-auto px-4 py-8 max-w-2xl">
+      <a
+        href="javascript:void(0);"
+        onclick="goBack()"
+        class="flex items-center text-blue-500 hover:text-blue-700 transition-colors mb-4"
+      >
+        <i class="fas fa-arrow-left mr-1"> </i>
+        <span> 返回 </span>
+      </a>
+      <div class="bg-white rounded-lg shadow-md p-6">
+        <!-- 标题 -->
+        <div class="flex items-center mb-6">
+          <div class="flex items-center">
+            <i class="fas fa-map-marker-alt text-blue-500 text-xl mr-2"> </i>
+            <h1 class="text-xl font-semibold text-gray-800">添加收货地址</h1>
+          </div>
+        </div>
+        <!-- 表单区域 -->
+        <form id="addressForm" class="space-y-4">
+          <!-- 收货人姓名 -->
+          <div>
+            <label
+              for="name"
+              class="block text-sm font-medium text-gray-700 mb-1"
+            >
+              收货人姓名
+            </label>
+            <input
+              type="text"
+              id="name"
+              name="name"
+              class="w-full form-input px-4 py-2 border border-gray-300 rounded-md focus:border-blue-500 focus:ring-blue-500"
+              placeholder="请输入收货人姓名"
+              required
+            />
+          </div>
+          <!-- 收货人电话 -->
+          <div>
+            <label
+              for="phone"
+              class="block text-sm font-medium text-gray-700 mb-1"
+            >
+              收货人电话
+            </label>
+            <input
+              type="tel"
+              id="phone"
+              name="phone"
+              class="w-full form-input px-4 py-2 border border-gray-300 rounded-md focus:border-blue-500 focus:ring-blue-500"
+              placeholder="请输入收货人电话"
+              required
+            />
+          </div>
+          <!-- 省市区选择 -->
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <!-- 省份 -->
+            <div>
+              <label
+                for="province"
+                class="block text-sm font-medium text-gray-700 mb-1"
+              >
+                省份
+              </label>
+              <select
+                id="province"
+                name="province"
+                class="w-full form-input px-4 py-2 border border-gray-300 rounded-md focus:border-blue-500 focus:ring-blue-500"
+                required
+              >
+                <option value disabled selected>请选择省份</option>
+                <option value="北京">北京</option>
+                <option value="上海">上海</option>
+                <option value="广东">广东</option>
+                <option value="江苏">江苏</option>
+                <option value="浙江">浙江</option>
+              </select>
+            </div>
+            <!-- 城市 -->
+            <div>
+              <label
+                for="city"
+                class="block text-sm font-medium text-gray-700 mb-1"
+              >
+                城市
+              </label>
+              <select
+                id="city"
+                name="city"
+                class="w-full form-input px-4 py-2 border border-gray-300 rounded-md focus:border-blue-500 focus:ring-blue-500"
+                required
+              >
+                <option value disabled selected>请选择城市</option>
+                <option value="北京市">北京市</option>
+                <option value="上海市">上海市</option>
+                <option value="广州市">广州市</option>
+                <option value="深圳市">深圳市</option>
+                <option value="杭州市">杭州市</option>
+              </select>
+            </div>
+            <!-- 区县 -->
+            <div>
+              <label
+                for="district"
+                class="block text-sm font-medium text-gray-700 mb-1"
+              >
+                区县
+              </label>
+              <select
+                id="district"
+                name="district"
+                class="w-full form-input px-4 py-2 border border-gray-300 rounded-md focus:border-blue-500 focus:ring-blue-500"
+                required
+              >
+                <option value disabled selected>请选择区县</option>
+                <option value="朝阳区">朝阳区</option>
+                <option value="海淀区">海淀区</option>
+                <option value="浦东新区">浦东新区</option>
+                <option value="天河区">天河区</option>
+                <option value="西湖区">西湖区</option>
+              </select>
+            </div>
+          </div>
+          <!-- 街道 -->
+          <div>
+            <label
+              for="street"
+              class="block text-sm font-medium text-gray-700 mb-1"
+            >
+              街道
+            </label>
+            <input
+              type="text"
+              id="street"
+              name="street"
+              class="w-full form-input px-4 py-2 border border-gray-300 rounded-md focus:border-blue-500 focus:ring-blue-500"
+              placeholder="请输入街道信息"
+              required
+            />
+          </div>
+          <!-- 详细地址 -->
+          <div>
+            <label
+              for="detail"
+              class="block text-sm font-medium text-gray-700 mb-1"
+            >
+              详细地址
+            </label>
+            <textarea
+              id="detail"
+              name="detail"
+              rows="3"
+              class="w-full form-input px-4 py-2 border border-gray-300 rounded-md focus:border-blue-500 focus:ring-blue-500"
+              placeholder="请输入详细地址，如门牌号、楼层等"
+              required
+            ></textarea>  <!-- 去除标签内的空格和换行 -->
+          </div>
+          <!-- 操作按钮 -->
+          <div class="flex justify-end space-x-4 pt-4">
+            <button
+              type="button"
+              onclick="resetForm()"
+              class="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-100 transition-colors"
+            >
+              重置
+            </button>
+            <button
+              type="submit"
+              class="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors"
+            >
+              保存地址
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+    <script>
+      // 湖南长沙的省市区数据
+      const hunanData = [
+        {
+          name: "湖南",  // 修改为"湖南"而不是"湖南省"
+          children: [
+            {
+              name: "长沙市",
+              children: [
+                {name: "芙蓉区"},
+                {name: "天心区"},
+                {name: "岳麓区"},
+                {name: "开福区"},
+                {name: "雨花区"},
+                {name: "望城区"},
+                {name: "长沙县"},
+                {name: "浏阳市"},
+                {name: "宁乡市"}
+              ]
+            }
+          ]
+        }
+      ];
+      
+      // 获取JWT令牌
+      function getJwtToken() {
+        return localStorage.getItem('jwtToken');
+      }
+      
+      // 初始化省市区选择
+      document.addEventListener('DOMContentLoaded', function() {
+        const provinceSelect = document.getElementById('province');
+        const citySelect = document.getElementById('city');
+        const districtSelect = document.getElementById('district');
+      
+        // 清空原有省份选项
+        provinceSelect.innerHTML = '<option value="" disabled selected>请选择省份</option>';
+        
+        // 填充省份选项 - 只添加湖南
+        hunanData.forEach(province => {
+          const option = document.createElement('option');
+          option.value = province.name;
+          option.textContent = province.name;
+          provinceSelect.appendChild(option);
+        });
+      
+        // 省份变化时更新城市
+        provinceSelect.addEventListener('change', function() {
+          citySelect.innerHTML = '<option value="" disabled selected>请选择城市</option>';
+          citySelect.disabled = false;
+          districtSelect.innerHTML = '<option value="" disabled selected>请先选择城市</option>';
+          districtSelect.disabled = true;
+      
+          const selectedProvince = hunanData.find(p => p.name === this.value);
+          if (selectedProvince) {
+            selectedProvince.children.forEach(city => {
+              const option = document.createElement('option');
+              option.value = city.name;
+              option.textContent = city.name;
+              citySelect.appendChild(option);
+            });
+          }
+        });
+      
+        // 城市变化时更新区县
+        citySelect.addEventListener('change', function() {
+          districtSelect.innerHTML = '<option value="" disabled selected>请选择区县</option>';
+          districtSelect.disabled = false;
+      
+          const selectedProvince = hunanData.find(p => p.name === provinceSelect.value);
+          if (selectedProvince) {
+            const selectedCity = selectedProvince.children.find(c => c.name === this.value);
+            if (selectedCity && selectedCity.children) {
+              selectedCity.children.forEach(district => {
+                const option = document.createElement('option');
+                option.value = district.name;
+                option.textContent = district.name;
+                districtSelect.appendChild(option);
+              });
+            }
+          }
+        });
+
+        // 默认选择湖南
+        provinceSelect.value = "湖南";
+        provinceSelect.dispatchEvent(new Event('change'));
+        citySelect.value = "长沙市";
+        citySelect.dispatchEvent(new Event('change'));
+      });
+      // 表单提交处理
+      document.getElementById('addressForm').addEventListener('submit', async function (e) {
+        e.preventDefault();
+      
+        const jwtToken = getJwtToken();
+        if (!jwtToken) {
+          alert('请先登录');
+          window.location.href = 'login.html';
+          return;
+        }
+      
+        // 获取表单数据
+        const formData = {
+          receiverName: document.getElementById('name').value,
+          receiverPhone: document.getElementById('phone').value,
+          province: document.getElementById('province').value,
+          city: document.getElementById('city').value,
+          district: document.getElementById('district').value,
+          street: document.getElementById('street').value,
+          detailAddress: document.getElementById('detail').value
+        };
+      
+        // 表单验证
+        if (!validatePhone(formData.receiverPhone)) {
+          alert('请输入正确的手机号码');
+          return;
+        }
+      
+        try {
+          const response = await fetch('http://localhost:9527/address/createAddress', {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${jwtToken}`,
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(formData)
+          });
+      
+          const result = await response.json();
+          
+          if (response.status === 401) {
+            localStorage.removeItem('jwtToken');
+            window.location.href = 'login.html';
+            return;
+          }
+      
+          if (response.status === 200) {
+            // 200状态码显示前端自定义成功提示
+            alert('新增成功');
+            window.location.href = 'address.html';
+          } else {
+            // 非200状态码显示后端返回的提示
+            throw new Error(result.message || '地址添加失败');
+          }
+        } catch (error) {
+          console.error('提交失败:', error);
+          alert(error.message);
+        }
+      });
+      // 重置表单
+      function resetForm() {
+        document.getElementById('addressForm').reset();
+      }
+
+      // 简单的手机号验证
+      function validatePhone(phone) {
+        var reg = /^1[3-9]\d{9}$/;
+        return reg.test(phone);
+      }
+
+      // 返回按钮点击事件
+      function goBack() {
+        window.history.back();
+      }
+    </script>
+  </body>
+</html>

@@ -1,0 +1,357 @@
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>商品详情页</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+      rel="stylesheet"
+      href="https://cdn.bootcdn.net/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <style>
+      .product-image {
+          transition: transform 0.3s ease;
+      }
+      .product-image:hover {
+          transform: scale(1.02);
+      }
+      .btn-action {
+          transition: all 0.2s ease;
+      }
+      .btn-action:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      }
+    </style>
+  </head>
+  <body class="bg-gray-50">
+    <div class="container mx-auto px-4 py-8 max-w-6xl">
+      <!-- 修改后的返回按钮（与内容框架对齐） -->
+      <div class="mb-6">
+        <button 
+          onclick="window.location.href='Main.html'"
+          class="flex items-center bg-white hover:bg-gray-100 text-gray-800 font-medium py-2 px-4 rounded-lg shadow-md transition-all"
+        >
+          <i class="fas fa-arrow-left mr-2"></i>
+          返回
+        </button>
+      </div>
+      
+      <div class="bg-white rounded-lg shadow-lg overflow-hidden">
+        <!-- 商品主区域 -->
+        <div class="md:flex">
+          <!-- 商品图片 -->
+          <div class="md:w-1/2 p-6">
+            <div class="relative overflow-hidden rounded-lg">
+              <img
+                src="https://aidev.gemcoder.com/staticResource/echoAiSystemImages/8db8017584698e378a3696bacdacae0f.png"
+                alt="商品主图"
+                class="w-full h-96 object-cover product-image"
+              />
+              <div
+                class="absolute top-2 right-2 bg-white bg-opacity-80 rounded-full p-2"
+              >
+                <i class="fas fa-heart text-red-500 text-xl"> </i>
+              </div>
+            </div>
+            <div class="flex mt-4 space-x-2">
+              <img
+                src="https://aidev.gemcoder.com/staticResource/echoAiSystemImages/d82f8b107d0ebaaaf8a8fb47fc80a9b2.png"
+                alt="商品细节图1"
+                class="w-20 h-20 object-cover rounded cursor-pointer border-2 border-transparent hover:border-blue-500"
+              />
+              <img
+                src="https://aidev.gemcoder.com/staticResource/echoAiSystemImages/233c090e6456af461d236c06c3bb4bfa.png"
+                alt="商品细节图2"
+                class="w-20 h-20 object-cover rounded cursor-pointer border-2 border-transparent hover:border-blue-500"
+              />
+              <img
+                src="https://aidev.gemcoder.com/staticResource/echoAiSystemImages/079de799d14f51d9e4958cdc1b6e0b9a.png"
+                alt="商品细节图3"
+                class="w-20 h-20 object-cover rounded cursor-pointer border-2 border-transparent hover:border-blue-500"
+              />
+            </div>
+          </div>
+          <!-- 商品信息 -->
+          <div class="md:w-1/2 p-6">
+            <h1 class="text-3xl font-bold text-gray-800 mb-2">
+              高端无线蓝牙耳机
+            </h1>
+            <div class="flex items-center mb-4">
+              <div class="flex text-yellow-400">
+                <i class="fas fa-star"> </i>
+                <i class="fas fa-star"> </i>
+                <i class="fas fa-star"> </i>
+                <i class="fas fa-star"> </i>
+                <i class="fas fa-star-half-alt"> </i>
+              </div>
+              <span class="text-gray-600 ml-2"> (128 条评价) </span>
+            </div>
+            <div class="mb-6">
+              <span class="text-3xl font-bold text-red-600"> ¥599 </span>
+              <span class="text-gray-500 line-through ml-2"> ¥799 </span>
+              <span
+                class="bg-red-100 text-red-800 text-sm font-medium ml-2 px-2.5 py-0.5 rounded"
+              >
+                限时优惠
+              </span>
+            </div>
+            <div class="mb-6">
+              <h3 class="text-lg font-semibold text-gray-800 mb-2">商品描述</h3>
+              <p class="text-gray-600 leading-relaxed">
+                这款高端无线蓝牙耳机采用最新蓝牙5.2技术，提供稳定连接和卓越音质。40mm大动圈单元带来震撼低音，ANC主动降噪功能让您沉浸音乐世界。长达30小时续航，IPX5防水等级，适合各种场景使用。
+              </p>
+            </div>
+            <div class="mb-6">
+              <h3 class="text-lg font-semibold text-gray-800 mb-2">颜色选择</h3>
+              <div class="flex space-x-3">
+                <button
+                  class="w-10 h-10 rounded-full bg-black border-2 border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+                ></button>
+                <button
+                  class="w-10 h-10 rounded-full bg-white border-2 border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+                ></button>
+                <button
+                  class="w-10 h-10 rounded-full bg-blue-500 border-2 border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+                ></button>
+                <button
+                  class="w-10 h-10 rounded-full bg-red-500 border-2 border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+                ></button>
+              </div>
+            </div>
+            <div class="mb-6">
+              <h3 class="text-lg font-semibold text-gray-800 mb-2">数量</h3>
+              <div class="flex items-center">
+                <button
+                  id="decrease"
+                  class="bg-gray-200 px-3 py-1 rounded-l-lg hover:bg-gray-300"
+                >
+                  <i class="fas fa-minus"> </i>
+                </button>
+                <input
+                  type="number"
+                  id="quantity"
+                  value="1"
+                  min="1"
+                  max="10"
+                  class="w-16 text-center border-t border-b border-gray-300 py-1"
+                />
+                <button
+                  id="increase"
+                  class="bg-gray-200 px-3 py-1 rounded-r-lg hover:bg-gray-300"
+                >
+                  <i class="fas fa-plus"> </i>
+                </button>
+              </div>
+            </div>
+            <div class="flex space-x-4">
+              <button
+                class="btn-action flex-1 bg-blue-600 hover:bg-blue-700 text-white py-3 px-6 rounded-lg font-medium flex items-center justify-center"
+              >
+                <i class="fas fa-shopping-cart mr-2"> </i>
+                加入购物车
+              </button>
+              <button
+                class="btn-action flex-1 bg-red-600 hover:bg-red-700 text-white py-3 px-6 rounded-lg font-medium flex items-center justify-center"
+              >
+                <i class="fas fa-bolt mr-2"> </i>
+                立即购买
+              </button>
+            </div>
+            <!-- 商家信息 -->
+            <div class="p-6 border-t border-gray-200">
+              <h2 class="text-xl font-bold text-gray-800 mb-4">商家信息</h2>
+              <div class="flex items-center space-x-4">
+                <div class="w-16 h-16 rounded-full bg-gray-200 overflow-hidden">
+                  <img
+                    src="https://aidev.gemcoder.com/staticResource/echoAiSystemImages/f2f57a506ef029495434dae648af1cf0.png"
+                    alt="商家头像"
+                    class="w-full h-full object-cover"
+                  />
+                </div>
+                <div class="flex-1">
+                  <h3 class="text-lg font-semibold">SoundMaster官方旗舰店</h3>
+                  <div class="flex items-center mt-1">
+                    <div class="flex text-yellow-400 text-sm">
+                      <i class="fas fa-star"> </i>
+                      <i class="fas fa-star"> </i>
+                      <i class="fas fa-star"> </i>
+                      <i class="fas fa-star"> </i>
+                      <i class="fas fa-star-half-alt"> </i>
+                    </div>
+                    <span class="text-gray-600 text-sm ml-2"> 4.8分 </span>
+                  </div>
+                  <p class="text-gray-600 text-sm mt-1">
+                    专业音频设备制造商，10年品质保证
+                  </p>
+                </div>
+                <button
+                  class="btn-action bg-white border border-blue-500 text-blue-500 hover:bg-blue-50 px-4 py-2 rounded-lg"
+                >
+                  <i class="fas fa-comment-dots mr-2"> </i>
+                  联系商家
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <script>
+      // 联系商家功能
+      document.querySelector('.btn-action.bg-white').addEventListener('click', function () {
+        alert('正在为您连接商家客服，请稍候...');
+      });
+
+      // 数量增减功能
+      document.getElementById('increase').addEventListener('click', function () {
+        var quantityInput = document.getElementById('quantity');
+        var value = parseInt(quantityInput.value);
+        if (value < 10) {
+          quantityInput.value = value + 1;
+        }
+      });
+      document.getElementById('decrease').addEventListener('click', function () {
+        var quantityInput = document.getElementById('quantity');
+        var value = parseInt(quantityInput.value);
+        if (value > 1) {
+          quantityInput.value = value - 1;
+        }
+      });
+      // 数量输入验证
+      document.getElementById('quantity').addEventListener('change', function () {
+        var value = parseInt(this.value);
+        if (isNaN(value) || value < 1) {
+          this.value = 1;
+        } else if (value > 10) {
+          this.value = 10;
+        }
+      });
+      // 颜色选择功能
+      var colorButtons = document.querySelectorAll('[class*="w-10 h-10 rounded-full"]');
+      colorButtons.forEach(function (button) {
+        button.addEventListener('click', function () {
+          colorButtons.forEach(function (btn) {
+            btn.classList.remove('ring-2', 'ring-blue-500');
+            btn.classList.add('border-gray-300');
+          });
+          this.classList.remove('border-gray-300');
+          this.classList.add('ring-2', 'ring-blue-500');
+        });
+      });
+      // 默认选中第一个颜色
+      if (colorButtons.length > 0) {
+        colorButtons[0].click();
+      }
+      // 加入购物车功能
+      document.querySelector('.bg-blue-600').addEventListener('click', function () {
+        var quantity = document.getElementById('quantity').value;
+        alert("\u5DF2\u6210\u529F\u5C06 ".concat(quantity, " \u4EF6\u5546\u54C1\u52A0\u5165\u8D2D\u7269\u8F66"));
+        // 这里可以添加实际的购物车逻辑
+      });
+      // 立即购买功能
+      document.querySelector('.bg-red-600').addEventListener('click', function () {
+        var quantity = document.getElementById('quantity').value;
+        alert("\u60A8\u6B63\u5728\u8D2D\u4E70 ".concat(quantity, " \u4EF6\u5546\u54C1\uFF0C\u5373\u5C06\u8DF3\u8F6C\u5230\u652F\u4ED8\u9875\u9762"));
+        // 这里可以添加实际的购买逻辑
+      });
+      // 图片预览功能
+      var thumbnails = document.querySelectorAll('.w-20.h-20');
+      var mainImage = document.querySelector('.product-image');
+      thumbnails.forEach(function (thumbnail) {
+        thumbnail.addEventListener('click', function () {
+          thumbnails.forEach(function (img) {
+            img.classList.remove('border-blue-500');
+            img.classList.add('border-transparent');
+          });
+          this.classList.remove('border-transparent');
+          this.classList.add('border-blue-500');
+
+          // 在实际应用中，这里应该替换为主图的src
+          // mainImage.src = this.src;
+        });
+      });
+    </script>
+    <!-- 添加购物车悬浮栏 -->
+    <div class="fixed bottom-0 left-0 right-0 bg-white shadow-lg border-t border-gray-200 p-4 z-50">
+      <div class="container mx-auto flex justify-between items-center">
+        <div class="flex items-center space-x-4">
+          <div class="relative">
+            <i class="fas fa-shopping-cart text-2xl text-blue-600"></i>
+            <span id="cart-count" class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">0</span>
+          </div>
+          <div>
+            <p class="text-gray-600 text-sm">总价</p>
+            <p id="cart-total" class="font-bold text-lg">¥0.00</p>
+          </div>
+        </div>
+        <button 
+          id="view-cart-btn"
+          class="bg-blue-600 hover:bg-blue-700 text-white py-2 px-6 rounded-lg font-medium"
+          onclick="window.location.href='myCart.html?from=product&productId=' + new URLSearchParams(window.location.search).get('productId')"
+        >
+          查看购物车
+        </button>
+      </div>
+    </div>
+
+    <script>
+      // 购物车数据
+      let cart = {
+        items: [],
+        total: 0
+      };
+
+      // 更新购物车显示
+      function updateCartDisplay() {
+        document.getElementById('cart-count').textContent = cart.items.reduce((sum, item) => sum + item.quantity, 0);
+        document.getElementById('cart-total').textContent = `¥${cart.total.toFixed(2)}`;
+      }
+
+      // 从localStorage加载购物车数据
+      function loadCart() {
+        const savedCart = localStorage.getItem('shoppingCart');
+        if (savedCart) {
+          cart = JSON.parse(savedCart);
+          updateCartDisplay();
+        }
+      }
+
+      // 保存购物车数据到localStorage
+      function saveCart() {
+        localStorage.setItem('shoppingCart', JSON.stringify(cart));
+      }
+
+      // 初始化时加载购物车
+      document.addEventListener('DOMContentLoaded', function() {
+        loadCart();
+      });
+
+      // 加入购物车功能修改
+      document.querySelector('.bg-blue-600').addEventListener('click', function() {
+        const quantity = parseInt(document.getElementById('quantity').value);
+        const price = parseFloat(document.querySelector('.text-red-600').textContent.replace('¥', ''));
+        
+        // 添加到购物车
+        cart.items.push({
+          productId: new URLSearchParams(window.location.search).get('productId'),
+          quantity: quantity,
+          price: price
+        });
+        
+        // 计算总价
+        cart.total = cart.items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+        
+        updateCartDisplay();
+        saveCart();  // 保存到localStorage
+        alert(`已成功将 ${quantity} 件商品加入购物车`);
+      });
+
+      // 查看购物车按钮事件
+      document.getElementById('view-cart-btn').addEventListener('click', function() {
+        // 这里可以跳转到购物车页面
+        window.location.href = 'myCart.html';  // 修改这里
+      });
+    </script>
+  </body>
+</html>

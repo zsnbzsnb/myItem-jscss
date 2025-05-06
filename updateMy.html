@@ -1,0 +1,470 @@
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>个人资料编辑</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+      rel="stylesheet"
+      href="https://cdn.bootcdn.net/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <style>
+      .form-input:focus {
+          box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.5);
+      }
+    </style>  
+  </head>
+  <body class="bg-gray-100 min-h-screen">
+    <div class="container mx-auto px-4 py-8 max-w-4xl">
+      <div class="bg-white rounded-lg shadow-md overflow-hidden">
+        <!-- 修改头部区域，移除返回按钮 -->
+        <div class="bg-blue-600 px-6 py-4 flex items-center">
+            <i class="fas fa-user-edit text-white text-2xl mr-3"></i>
+            <h1 class="text-white text-xl font-semibold">个人资料编辑</h1>
+        </div>
+        <!-- 表单区域 -->
+        <form class="p-6 space-y-6">
+          <!-- 头像区域 -->
+          <div class="flex flex-col items-center space-y-4 mb-6">
+            <div class="relative group">
+              <img
+                id="avatarPreview"
+                src="https://aidev.gemcoder.com/staticResource/echoAiSystemImages/3d7de71ad85428e008655634e2d620de.png"
+                class="w-32 h-32 rounded-full object-cover border-4 border-white shadow-md"
+              />
+              <button
+                id="editAvatarBtn"
+                class="absolute bottom-0 right-0 bg-blue-600 text-white rounded-full p-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+              >
+                <i class="fas fa-camera"> </i>
+              </button>
+            </div>
+            <p class="text-gray-600 text-sm">点击头像可更换</p>
+          </div>
+          <!-- 基本信息部分 -->
+          <div class="space-y-4">
+            <h2 class="text-lg font-medium text-gray-800 border-b pb-2">
+              基本信息
+            </h2>
+            <!-- 用户名 -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-center">
+              <label for="username" class="text-gray-700 font-medium">
+                <i class="fas fa-user mr-2"> </i>
+                用户名
+              </label>
+              <div class="md:col-span-2">
+                <input
+                  type="text"
+                  id="username"
+                  class="form-input w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500 transition"
+                  placeholder="请输入用户名"
+                  value="张三"
+                />
+              </div>
+            </div>
+            <!-- 邮箱 -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-center">
+              <label for="email" class="text-gray-700 font-medium">
+                <i class="fas fa-envelope mr-2"> </i>
+                邮箱
+              </label>
+              <div class="md:col-span-2">
+                <input
+                  type="email"
+                  id="email"
+                  class="form-input w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500 transition"
+                  placeholder="请输入邮箱"
+                  value="zhangsan@example.com"
+                />
+              </div>
+            </div>
+            <!-- 电话号码 -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-center">
+              <label for="phone" class="text-gray-700 font-medium">
+                <i class="fas fa-phone mr-2"> </i>
+                电话号码
+              </label>
+              <div class="md:col-span-2">
+                <input
+                  type="tel"
+                  id="phone"
+                  class="form-input w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500 transition"
+                  placeholder="请输入电话号码"
+                  value="13800138000"
+                />
+              </div>
+            </div>
+          </div>
+          <!-- 性别选择 -->
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-center">
+            <label for="gender" class="text-gray-700 font-medium">
+              <i class="fas fa-venus-mars mr-2"> </i>
+              性别
+            </label>
+            <div class="md:col-span-2">
+              <select
+                id="gender"
+                class="form-select w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500 transition"
+              >
+                <option value="男">男</option>
+                <option value="女">女</option>
+                <option value="保密">保密</option>
+              </select>
+            </div>
+          </div>
+          <!-- 地址信息部分 -->
+          <div class="space-y-4">
+            <h2 class="text-lg font-medium text-gray-800 border-b pb-2">
+              地址信息
+            </h2>
+            <!-- 默认地址表格 -->
+            <div class="overflow-x-auto">
+              <table
+                id="defaultAddressTable"
+                class="min-w-full bg-white border border-gray-200 rounded-lg"
+              >
+                <thead class="bg-gray-50">
+                  <tr>
+                    <th
+                      class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                    >
+                      <i class="fas fa-map-marker-alt mr-2"> </i>
+                      默认地址
+                    </th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-200">
+                  <tr>
+                    <td
+                      class="px-4 py-3 whitespace-nowrap text-sm text-gray-600"
+                    >
+                     
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <!-- 详细地址展示 -->
+            <div id="detailedAddress" class="grid grid-cols-1 md:grid-cols-3 gap-4 items-center">
+              <label class="text-gray-700 font-medium">
+                <i class="fas fa-home mr-2"> </i>
+                详细地址
+              </label>
+              <div class="md:col-span-2">
+                <div
+                  class="bg-gray-50 px-4 py-3 rounded-lg border border-gray-200"
+                >
+                  <p class="text-gray-800">朝阳区建国路88号</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- 操作按钮 -->
+          <div class="flex justify-end space-x-4 pt-4">
+            <!-- 修改取消按钮，添加点击事件 -->
+            <button
+                type="button"
+                onclick="window.history.back()"
+                class="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-100 transition"
+            >
+                取消
+            </button>
+            <button
+              type="submit"
+              class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50"
+            >
+              保存更改
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+    <!-- 头像编辑模态框 -->
+    <div
+      id="avatarModal"
+      class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden"
+    >
+      <div class="bg-white rounded-lg shadow-xl w-full max-w-md">
+        <div class="p-6">
+          <div class="flex justify-between items-center mb-4">
+            <h3 class="text-lg font-semibold text-gray-800">更换头像</h3>
+            <button
+              id="closeAvatarModal"
+              class="text-gray-500 hover:text-gray-700"
+            >
+              <i class="fas fa-times"> </i>
+            </button>
+          </div>
+          <div class="space-y-4">
+            <div class="flex justify-center">
+              <div class="relative">
+                <img
+                  id="avatarUploadPreview"
+                  src="https://aidev.gemcoder.com/staticResource/echoAiSystemImages/3d7de71ad85428e008655634e2d620de.png"
+                  class="w-48 h-48 rounded-full object-cover border border-gray-200"
+                />
+              </div>
+            </div>
+            <div class="flex flex-col space-y-2">
+              <label class="block text-sm font-medium text-gray-700">
+                上传新头像
+              </label>
+              <input
+                type="file"
+                id="avatarUpload"
+                accept="image/*"
+                class="hidden"
+              />
+              <button
+                id="uploadBtn"
+                class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+              >
+                <i class="fas fa-upload mr-2"> </i>
+                选择图片
+              </button>
+            </div>
+            <div class="flex justify-end space-x-3 pt-4">
+              <button
+                id="cancelAvatarChange"
+                class="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-100 transition"
+              >
+                取消
+              </button>
+              <button
+                id="saveAvatar"
+                class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+              >
+                保存
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <script>
+      document.addEventListener('DOMContentLoaded', function () {
+        // 返回按钮
+        var backBtn = document.getElementById('backBtn');
+        backBtn.addEventListener('click', function (e) {
+          e.stopPropagation();
+          window.history.back();
+        });
+    
+        // 头像编辑相关元素
+        var avatarModal = document.getElementById('avatarModal');
+        var editAvatarBtn = document.getElementById('editAvatarBtn');
+        var closeAvatarModal = document.getElementById('closeAvatarModal');
+        var cancelAvatarChange = document.getElementById('cancelAvatarChange');
+        var avatarUpload = document.getElementById('avatarUpload');
+        var uploadBtn = document.getElementById('uploadBtn');
+        var avatarUploadPreview = document.getElementById('avatarUploadPreview');
+        var avatarPreview = document.getElementById('avatarPreview');
+        var saveAvatar = document.getElementById('saveAvatar');
+    
+        // 打开头像编辑模态框
+        editAvatarBtn.addEventListener('click', function (e) {
+          e.stopPropagation();
+          avatarModal.classList.remove('hidden');
+        });
+    
+        // 关闭头像编辑模态框
+        closeAvatarModal.addEventListener('click', function (e) {
+          e.stopPropagation();
+          avatarModal.classList.add('hidden');
+        });
+        cancelAvatarChange.addEventListener('click', function (e) {
+          e.stopPropagation();
+          avatarModal.classList.add('hidden');
+        });
+    
+        // 触发文件选择
+        uploadBtn.addEventListener('click', function (e) {
+          e.stopPropagation();
+          avatarUpload.click();
+        });
+    
+        // 头像预览
+        avatarUpload.addEventListener('change', function (e) {
+          var file = e.target.files[0];
+          if (file) {
+            var reader = new FileReader();
+            reader.onload = function (event) {
+              avatarUploadPreview.src = event.target.result;
+            };
+            reader.readAsDataURL(file);
+          }
+        });
+    
+        // 保存头像
+        saveAvatar.addEventListener('click', async function (e) {
+          e.stopPropagation();
+          if (avatarUploadPreview.src) {
+            avatarPreview.src = avatarUploadPreview.src;
+            avatarModal.classList.add('hidden');
+    
+            // 实际项目中这里应该是AJAX请求上传头像
+            // const formData = new FormData();
+            // formData.append('avatar', avatarUpload.files[0]);
+            // fetch('/api/uploadAvatar', {
+            //     method: 'POST',
+            //     body: formData
+            // })
+            // .then(response => response.json())
+            // .then(data => {
+            //     avatarPreview.src = data.avatarUrl;
+            //     avatarModal.classList.add('hidden');
+            // })
+            // .catch(error => {
+            //     console.error('Error:', error);
+            // });
+          } else {
+            console.error('头像预览地址为空，无法保存');
+          }
+        });
+    
+        // 获取 JWT 令牌
+        function getJwtToken() {
+          return localStorage.getItem('jwtToken');
+        }
+    
+        // 获取用户信息并渲染到界面
+        async function fetchUserInfo() {
+          const jwtToken = getJwtToken();
+          if (!jwtToken) {
+              alert('请先登录');
+              window.location.href = 'login.html';
+              return;
+          }
+    
+          try {
+              // 获取用户基本信息
+              const userResponse = await fetch('http://localhost:9527/user/getAll', {
+                  method: 'GET',
+                  headers: {
+                      'Authorization': `Bearer ${jwtToken}`,
+                      'Content-Type': 'application/json'
+                  }
+              });
+    
+              if (userResponse.status === 401) {
+                  localStorage.removeItem('jwtToken');
+                  window.location.href = 'login.html';
+                  return;
+              }
+    
+              if (!userResponse.ok) {
+                  throw new Error('获取用户信息失败');
+              }
+    
+            const userData = await userResponse.json();
+            document.getElementById('username').value = userData.data.username;
+            document.getElementById('email').value = userData.data.email;
+            document.getElementById('phone').value = userData.data.phone;
+    
+            // 性别英文转中文映射
+            const genderMap = {
+              'male': '男',
+              'female': '女',
+              'secret': '保密'
+            };
+            const chineseGender = genderMap[userData.data.gender] || userData.data.gender;
+            const genderSelect = document.getElementById('gender');
+            // 遍历 option 来设置选中项
+            for (let i = 0; i < genderSelect.options.length; i++) {
+              if (genderSelect.options[i].value === chineseGender) {
+                genderSelect.selectedIndex = i;
+                break;
+              }
+            }
+    
+            // 调用地址接口获取地址信息
+            const addressResponse = await fetch('http://localhost:9527/address/getByUserId', {
+              method: 'GET',
+              headers: {
+                'Authorization': `Bearer ${jwtToken}`,
+                'Content-Type': 'application/json'
+              }
+            });
+    
+            if (!addressResponse.ok) {
+              throw new Error('获取地址信息失败');
+            }
+    
+            const addressData = await addressResponse.json();
+            const addresses = addressData.data.address; // 修改为 addressData.data.address
+            
+            // 找出 isDefault 为 true 的地址
+            const defaultAddress = addresses.find(address => address.isDefault === true);
+    
+            const defaultAddressTable = document.getElementById('defaultAddressTable');
+            const defaultAddressCell = defaultAddressTable.querySelector('tbody td');
+            const detailedAddressDiv = document.getElementById('detailedAddress');
+            const detailedAddressParagraph = detailedAddressDiv.querySelector('p');
+    
+            if (defaultAddress) {
+              const defaultAddressText = `${defaultAddress.province} ${defaultAddress.city} ${defaultAddress.district}`;
+              defaultAddressCell.textContent = defaultAddressText;
+              detailedAddressParagraph.textContent = `${defaultAddress.street} ${defaultAddress.detailAddress}`;
+            } else {
+              defaultAddressCell.textContent = '无默认地址';
+              detailedAddressParagraph.textContent = '无详细地址';
+            }
+    
+          } catch (error) {
+            console.error('获取信息出错:', error);
+            alert('获取信息失败，请重试');
+          }
+        }
+    
+        // 表单提交处理
+        var form = document.querySelector('form');
+        form.addEventListener('submit', async function (e) {
+          e.preventDefault();
+    
+          const jwtToken = getJwtToken();
+          if (!jwtToken) {
+              alert('请先登录');
+              window.location.href = 'login.html';
+              return;
+          }
+    
+          try {
+              const response = await fetch('http://localhost:9527/user/update', {
+                  method: 'POST',
+                  headers: {
+                      'Authorization': `Bearer ${jwtToken}`,
+                      'Content-Type': 'application/json'
+                  },
+                  body: JSON.stringify({
+                      username: document.getElementById('username').value,
+                      email: document.getElementById('email').value,
+                      phone: document.getElementById('phone').value,
+                      gender: document.getElementById('gender').value
+                  })
+              });
+    
+              if (response.status === 401) {
+                  // JWT令牌过期或无效
+                  localStorage.removeItem('jwtToken');
+                  window.location.href = 'login.html';
+                  return;
+              }
+    
+              if (response.status === 200) {
+                  alert('个人资料已成功保存！');
+                  await fetchUserInfo(); // 重新获取并渲染用户信息
+              } else {
+                  throw new Error('更新用户信息失败');
+              }
+          } catch (error) {
+              console.error('更新用户信息出错:', error);
+              alert('更新用户信息失败，请重试');
+          }
+        });
+    
+        // 初始化加载用户信息
+        fetchUserInfo();
+      });
+    </script>
+  </body>
+</html>

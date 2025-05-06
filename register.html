@@ -1,0 +1,216 @@
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>用户注册</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <style>
+        body {
+            background-color: #f0f9ff;
+        }
+       .input-group:focus-within {
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.5);
+        }
+    </style>
+</head>
+<body class="min-h-screen flex items-center justify-center p-4">
+    <div class="w-full max-w-md bg-white rounded-xl shadow-lg overflow-hidden">
+        <!-- 头部装饰 -->
+        <div class="bg-blue-500 h-2 w-full"></div>
+        <!-- 表单主体 -->
+        <div class="p-8">
+            <div class="text-center mb-8">
+                <h1 class="text-2xl font-bold text-gray-800">创建您的账户</h1>
+                <p class="text-gray-500 mt-2">加入我们，开启全新体验</p>
+            </div>
+            <form id="registerForm" class="space-y-6">
+                <!-- 用户名 -->
+                <div class="space-y-1">
+                    <label for="username" class="block text-sm font-medium text-gray-700">
+                        用户名
+                    </label>
+                    <div class="input-group relative rounded-md shadow-sm">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <i class="fas fa-user text-gray-400"></i>
+                        </div>
+                        <input type="text" id="username" name="username"
+                               class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                               placeholder="请输入用户名" required />
+                    </div>
+                </div>
+                <!-- 密码 -->
+                <div class="space-y-1">
+                    <label for="password" class="block text-sm font-medium text-gray-700">
+                        密码
+                    </label>
+                    <div class="input-group relative rounded-md shadow-sm">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <i class="fas fa-lock text-gray-400"></i>
+                        </div>
+                        <input type="password" id="password" name="password"
+                               class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                               placeholder="请输入密码" required />
+                    </div>
+                </div>
+                <!-- 确认密码 -->
+                <div class="space-y-1">
+                    <label for="confirmPassword" class="block text-sm font-medium text-gray-700">
+                        确认密码
+                    </label>
+                    <div class="input-group relative rounded-md shadow-sm">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <i class="fas fa-lock text-gray-400"></i>
+                        </div>
+                        <input type="password" id="confirmPassword" name="confirmPassword"
+                               class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                               placeholder="请再次输入密码" required />
+                    </div>
+                </div>
+                <!-- 邮箱 -->
+                <div class="space-y-1">
+                    <label for="email" class="block text-sm font-medium text-gray-700">
+                        电子邮箱
+                    </label>
+                    <div class="input-group relative rounded-md shadow-sm">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <i class="fas fa-envelope text-gray-400"></i>
+                        </div>
+                        <input type="email" id="email" name="email"
+                               class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                               placeholder="请输入电子邮箱" required />
+                    </div>
+                </div>
+                <!-- 手机号 -->
+                <div class="space-y-1">
+                    <label for="phone" class="block text-sm font-medium text-gray-700">
+                        手机号码
+                    </label>
+                    <div class="input-group relative rounded-md shadow-sm">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <i class="fas fa-phone text-gray-400"></i>
+                        </div>
+                        <input type="tel" id="phone" name="phone"
+                               class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                               placeholder="请输入手机号码" required />
+                    </div>
+                </div>
+                <!-- 注册按钮 -->
+                <div>
+                    <button type="submit" id="registerBtn"
+                            class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200">
+                        立即注册
+                    </button>
+                </div>
+            </form>
+            <!-- 底部链接 -->
+            <div class="mt-6 text-center text-sm text-gray-500">
+                已有账号？
+                <a href="javascript:void(0);" id="loginLink"
+                   class="font-medium text-blue-600 hover:text-blue-500">
+                    立即登录
+                </a>
+            </div>
+        </div>
+    </div>
+    <script>
+        "use strict";
+
+        document.addEventListener('DOMContentLoaded', function () {
+            var registerForm = document.getElementById('registerForm');
+            var registerBtn = document.getElementById('registerBtn');
+            var loginLink = document.getElementById('loginLink');
+
+            registerForm.addEventListener('submit', function (e) {
+                e.preventDefault();
+
+                // 获取表单数据
+                var username = document.getElementById('username').value.trim();
+                var password = document.getElementById('password').value;
+                var confirmPassword = document.getElementById('confirmPassword').value;
+                var email = document.getElementById('email').value.trim();
+                var phone = document.getElementById('phone').value.trim();
+
+                // 简单验证
+                if (!username) {
+                    alert('请输入用户名');
+                    return;
+                }
+                if (!password) {
+                    alert('请输入密码');
+                    return;
+                }
+                if (password!== confirmPassword) {
+                    alert('两次输入的密码不一致');
+                    return;
+                }
+                if (!email) {
+                    alert('请输入电子邮箱');
+                    return;
+                }
+                // 邮箱格式验证
+                var emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+                if (!emailRegex.test(email)) {
+                    alert('请输入正确格式的电子邮箱');
+                    return;
+                }
+                if (!phone) {
+                    alert('请输入手机号码');
+                    return;
+                }
+                // 手机号码验证
+                if (phone.length!== 11 || isNaN(phone)) {
+                    alert('请输入正确格式的11位手机号码');
+                    return;
+                }
+
+                // 模拟注册请求
+                registerBtn.disabled = true;
+                registerBtn.innerHTML = "<i class=\"fas fa-spinner fa-spin mr-2\"></i>注册中...";
+
+                // 这里应该是实际的AJAX请求
+                fetch('http://localhost:9527/user/register', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        username: username,
+                        password: password,
+                        email: email,
+                        phone: phone
+                    })
+                })
+               .then(response => {
+                    if (!response.ok) {
+                        throw new Error('HTTP error! Status:'+ response.status);
+                    }
+                    return response.json();
+                })
+               .then(data => {
+                    if (data.code === "200") {
+                        alert('注册成功！');
+                        registerBtn.disabled = false;
+                        registerBtn.textContent = '立即注册';
+                        registerForm.reset();
+                    } else {
+                        alert(data.message);
+                        registerBtn.disabled = false;
+                        registerBtn.textContent = '立即注册';
+                    }
+                })
+               .catch(error => {
+                    console.error('注册请求出错:', error);
+                    alert('注册请求出错，请稍后重试');
+                    registerBtn.disabled = false;
+                    registerBtn.textContent = '立即注册';
+                });
+            });
+
+            loginLink.addEventListener('click', function () {
+                window.location.href = 'login.html';
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,344 @@
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>地址簿管理</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+      rel="stylesheet"
+      href="https://cdn.bootcdn.net/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <style>
+      .fade-enter-active, .fade-leave-active {
+          transition: opacity 0.3s;
+      }
+      .fade-enter, .fade-leave-to {
+          opacity: 0;
+      }
+      .bounce-enter-active {
+          animation: bounce-in 0.5s;
+      }
+      .bounce-leave-active {
+          animation: bounce-in 0.5s reverse;
+      }
+      @keyframes bounce-in {
+          0% {
+              transform: scale(0.9);
+              opacity: 0;
+          }
+          50% {
+              transform: scale(1.05);
+          }
+          100% {
+              transform: scale(1);
+              opacity: 1;
+          }
+      }
+    </style>
+  </head>
+  <body class="bg-gray-50 min-h-screen">
+    <div class="container mx-auto px-4 py-8 max-w-4xl">
+      <div class="flex items-center justify-between mb-6">
+        <div class="flex items-center">
+          <a
+            href="my.html"
+            class="mr-3 text-gray-600 hover:text-gray-800"
+          >
+            <i class="fas fa-arrow-left text-xl"></i>
+          </a>
+          <h1 class="text-2xl font-bold text-gray-800">我的地址簿</h1>
+        </div>
+        <button
+          id="addAddressBtn"
+          class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors duration-200"
+        >
+          <i class="fas fa-plus mr-2"></i>
+          新增地址
+        </button>
+      </div>
+      <div class="bg-white rounded-lg shadow-md overflow-hidden">
+        <!-- 地址列表 -->
+        <div id="addressList" class="divide-y divide-gray-200">
+          <!-- 地址项将通过JS动态生成 -->
+        </div>
+      </div>
+    </div>
+    <!-- 确认设置默认地址的模态框 -->
+    <div
+      id="confirmModal"
+      class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden"
+    >
+      <div class="bg-white rounded-lg p-6 w-full max-w-md mx-4">
+        <div class="flex justify-between items-center mb-4">
+          <h3 class="text-lg font-semibold text-gray-800">确认设置默认地址</h3>
+          <button id="closeModal" class="text-gray-500 hover:text-gray-700">
+            <i class="fas fa-times"> </i>
+          </button>
+        </div>
+        <p class="text-gray-600 mb-6">确定要将此地址设为默认收货地址吗？</p>
+        <div class="flex justify-end space-x-3">
+          <button
+            id="cancelBtn"
+            class="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
+          >
+            取消
+          </button>
+          <button
+            id="confirmBtn"
+            class="px-4 py-2 bg-blue-600 rounded-md text-white hover:bg-blue-700"
+          >
+            确认
+          </button>
+        </div>
+      </div>
+    </div>
+    <script>
+      // 从缓存获取JWT令牌
+      function getJwtToken() {
+        return localStorage.getItem('jwtToken');
+      }
+      
+      // 当前选中的地址ID
+      let selectedAddressId = null;
+      
+      // 显示确认模态框
+      function showConfirmModal(addressId) {
+        selectedAddressId = addressId;
+        const modal = document.getElementById('confirmModal');
+        modal.classList.remove('hidden');
+        modal.classList.add('bounce-enter-active');
+      }
+      
+      // 隐藏确认模态框
+      function hideConfirmModal() {
+        const modal = document.getElementById('confirmModal');
+        modal.classList.add('hidden');
+        modal.classList.remove('bounce-enter-active');
+      }
+      
+      // 显示操作反馈
+      function showFeedback(message) {
+        const feedback = document.createElement('div');
+        feedback.className = 'fixed top-4 right-4 px-4 py-2 bg-green-500 text-white rounded-md shadow-lg flex items-center';
+        feedback.innerHTML = `
+          <i class="fas fa-check-circle mr-2"></i>
+          <span>${message}</span>
+        `;
+        document.body.appendChild(feedback);
+        setTimeout(() => {
+          feedback.classList.add('fade-enter-active');
+          setTimeout(() => {
+            feedback.remove();
+          }, 3000);
+        }, 50);
+      }
+      
+      // 删除地址
+      async function deleteAddress(addressId) {
+        const jwtToken = getJwtToken();
+        if (!jwtToken) {
+          alert('请先登录');
+          window.location.href = 'login.html';
+          return;
+        }
+      
+        if (!confirm('确定要删除这个地址吗？')) {
+          return;
+        }
+      
+        try {
+          const response = await fetch(`http://localhost:9527/address/deleteByAddressId?addressId=${addressId}`, {
+            method: 'DELETE',  // 修改为DELETE方法
+            headers: {
+              'Authorization': `Bearer ${jwtToken}`,
+              'Content-Type': 'application/json'
+            }
+          });
+      
+          if (response.status === 401) {
+            localStorage.removeItem('jwtToken');
+            window.location.href = 'login.html';
+            return;
+          }
+      
+          if (!response.ok) {
+            throw new Error('删除地址失败');
+          }
+      
+          await renderAddressList();
+          showFeedback('地址删除成功！');
+        } catch (error) {
+          console.error('删除失败:', error);
+          alert(error.message);
+        }
+      }
+      
+      // 渲染地址列表
+      async function renderAddressList() {
+        const jwtToken = getJwtToken();
+        if (!jwtToken) {
+          alert('请先登录');
+          window.location.href = '/login.html';
+          return;
+        }
+      
+        try {
+          const response = await fetch('http://localhost:9527/address/getByUserId', {
+            method: 'GET',
+            headers: {
+              'Authorization': `Bearer ${jwtToken}`,
+              'Content-Type': 'application/json'
+            }
+          });
+      
+          if (response.status === 401) {
+            localStorage.removeItem('jwtToken');
+            window.location.href = 'login.html';
+            return;
+          }
+      
+          if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.message || '获取地址失败');
+          }
+      
+          const result = await response.json();
+          const addressList = result.data.address; // 获取地址数组
+          const addressListEl = document.getElementById('addressList');
+          addressListEl.innerHTML = '';
+      
+          if (!addressList?.length) {
+            addressListEl.innerHTML = '<div class="p-4 text-gray-500">暂无收货地址</div>';
+            return;
+          }
+      
+          addressList.forEach((address) => {
+            const addressItem = document.createElement('div');
+            addressItem.className = 'p-4 hover:bg-gray-50 transition-colors duration-200 cursor-pointer';
+            addressItem.dataset.id = address.addressId;
+            
+            // 添加点击事件处理
+            addressItem.addEventListener('click', function() {
+              window.location.href = `updateAddress.html?addressId=${address.addressId}`;
+            });
+
+            const fullAddress = `${address.province} ${address.city} ${address.district} ${address.street} ${address.detailAddress}`;
+            
+            addressItem.innerHTML = `
+              <div class="flex items-start">
+                <div class="flex-1">
+                  <div class="flex items-center mb-2">
+                    <span class="font-medium text-gray-900 mr-2">${address.receiverName}</span>
+                    <span class="text-gray-600">${address.receiverPhone}</span>
+                    ${address.isDefault ? '<span class="ml-2 px-2 py-0.5 bg-green-100 text-green-800 text-xs rounded-full">默认地址</span>' : ''}
+                  </div>
+                  <p class="text-gray-600 text-sm">${fullAddress}</p>
+                </div>
+                <div class="flex items-center">
+                  <button class="toggle-actions-btn ml-4 px-2 py-1 text-gray-500 hover:text-gray-700">
+                    <i class="fas fa-chevron-down"></i>
+                  </button>
+                  <div class="actions-container hidden ml-2 space-x-2">
+                    ${!address.isDefault ? `
+                      <button class="set-default-btn px-3 py-1.5 text-sm text-blue-600 hover:text-blue-800 border border-blue-200 hover:border-blue-300 rounded-md transition-colors duration-200">
+                        <i class="fas fa-check-circle mr-1"></i>设为默认
+                      </button>
+                    ` : ''}
+                    <button class="delete-btn px-3 py-1.5 text-sm text-red-600 hover:text-red-800 border border-red-200 hover:border-red-300 rounded-md transition-colors duration-200">
+                      <i class="fas fa-trash-alt mr-1"></i>删除
+                    </button>
+                  </div>
+                </div>
+              </div>
+            `;
+            addressListEl.appendChild(addressItem);
+          });
+      
+          // 添加事件监听
+          document.querySelectorAll('.toggle-actions-btn').forEach((btn) => {
+            btn.addEventListener('click', function(e) {
+              e.stopPropagation();
+              const actionsContainer = this.nextElementSibling;
+              actionsContainer.classList.toggle('hidden');
+              const icon = this.querySelector('i');
+              if (actionsContainer.classList.contains('hidden')) {
+                icon.classList.replace('fa-chevron-up', 'fa-chevron-down');
+              } else {
+                icon.classList.replace('fa-chevron-down', 'fa-chevron-up');
+              }
+            });
+          });
+      
+          document.querySelectorAll('.set-default-btn').forEach((btn) => {
+            btn.addEventListener('click', function(e) {
+              e.stopPropagation();
+              const addressId = parseInt(this.closest('[data-id]').dataset.id);
+              showConfirmModal(addressId);
+            });
+          });
+      
+          document.querySelectorAll('.delete-btn').forEach((btn) => {
+            btn.addEventListener('click', function(e) {
+              e.stopPropagation();
+              const addressId = parseInt(this.closest('[data-id]').dataset.id);
+              deleteAddress(addressId);
+            });
+          });
+        } catch (error) {
+          console.error('请求失败:', error);
+          alert(error.message);
+        }
+      }
+      // 设置默认地址
+      async function setDefaultAddress() {
+        if (!selectedAddressId) return;
+        const jwtToken = getJwtToken();
+      
+        try {
+          const response = await fetch(`http://localhost:9527/address/updateStatus?addressId=${selectedAddressId}&status=1`, {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${jwtToken}`,
+              'Content-Type': 'application/json'
+            }
+          });
+      
+          if (response.status === 401) {
+            localStorage.removeItem('jwtToken');
+            window.location.href = 'login.html';
+            return;
+          }
+      
+          if (!response.ok) {
+            throw new Error('设置默认地址失败');
+          }
+      
+          await renderAddressList();
+          showFeedback('默认地址设置成功！');
+          hideConfirmModal();
+        } catch (error) {
+          console.error('设置失败:', error);
+          alert(error.message);
+        }
+      }
+      // 初始化
+      document.addEventListener('DOMContentLoaded', () => {
+        renderAddressList().catch(error => {
+          console.error('初始化失败:', error);
+          alert(error.message);
+        });
+
+        document.getElementById('closeModal').addEventListener('click', hideConfirmModal);
+        document.getElementById('cancelBtn').addEventListener('click', hideConfirmModal);
+        document.getElementById('confirmBtn').addEventListener('click', function() {
+          setDefaultAddress();
+          hideConfirmModal();
+        });
+
+        document.getElementById('addAddressBtn').addEventListener('click', function() {
+          window.location.href = 'createAddress.html';
+        });
+      });
+    </script>
+  </body>
+</html>

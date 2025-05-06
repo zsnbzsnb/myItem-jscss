@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>二手跑腿平台</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/echarts@5.4.3/dist/echarts.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+       .product-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+
+<body class="bg-gray-50 min-h-screen flex flex-col">
+    <!-- 顶部导航 -->
+    <!-- 修改顶部导航栏部分 -->
+    <header class="bg-white shadow-sm py-4 px-6 sticky top-0 z-50">
+        <div class="container mx-auto flex items-center">
+            <div class="flex items-center">
+                <img src="https://aidev.gemcoder.com/staticResource/echoAiSystemImages/86cf9ec79c7f849c564fb2f07bcbdb3b.png"
+                    alt="Logo" class="w-10 h-10 object-contain mr-2">
+                <h1 class="text-xl font-bold text-gray-800">二手跑腿平台</h1>
+            </div>
+        </div>
+    </header>
+    
+    <!-- 搜索区域保持不变 -->
+    <div class="container mx-auto px-6 py-6 mt-16"> <!-- 添加mt-16给搜索区域留出顶部空间 -->
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div class="col-span-1">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">
+                        商品名称
+                    </label>
+                    <input type="text" id="productName" placeholder="输入商品名称"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                <div class="col-span-1">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">
+                        商品分类
+                    </label>
+                    <select id="productCategory"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="">全部分类</option>
+                        <option value="1">电子产品</option>
+                        <option value="2">教材</option>
+                        <option value="3">护肤品</option>
+                        <option value="4">化妆品</option>
+                        <option value="5">服装</option>
+                        <option value="6">鞋履</option>
+                        <option value="7">箱包</option>
+                        <option value="8">家居用品</option>
+                        <option value="9">办公用品</option>
+                        <option value="10">体育用品</option>
+                        <option value="11">玩具</option>
+                        <option value="12">食品饮料</option>
+                        <option value="13">数码配件</option>
+                        <option value="14">图书音像</option>
+                        <option value="15">乐器</option>
+                        <option value="16">户外用品</option>
+                    </select>
+                </div>
+                <div class="col-span-1">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">
+                        价格区间
+                    </label>
+                    <div class="flex items-center">
+                        <input type="number" id="minPrice" placeholder="最低价"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-l-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <span class="px-2 bg-gray-100 h-full flex items-center"> ~ </span>
+                        <input type="number" id="maxPrice" placeholder="最高价"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-r-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                </div>
+                <div class="col-span-1 flex items-end">
+                    <button id="searchBtn"
+                        class="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-md transition duration-300 flex items-center justify-center">
+                        <i class="fas fa-search mr-2"></i>
+                        查询
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- 商品展示区域 -->
+    <main class="container mx-auto px-6 py-4 flex-grow">
+        <div class="mb-4 flex justify-between items-center">
+            <h2 class="text-lg font-semibold text-gray-800">商品列表</h2>
+            <div class="flex items-center">
+                <span class="text-sm text-gray-600 mr-2"> 每页显示 </span>
+                <select id="pageSize"
+                    class="px-3 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <option value="5">5条</option>
+                    <option value="10" selected>10条</option>
+                    <option value="15">15条</option>
+                    <option value="20">20条</option>
+                </select>
+            </div>
+        </div>
+        <div id="productList"
+            class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            <!-- 商品卡片将通过JavaScript动态生成 -->
+        </div>
+        <!-- 分页 -->
+        <div class="flex justify-center mt-8">
+            <nav class="inline-flex rounded-md shadow">
+                <button id="firstPage"
+                    class="px-3 py-1 rounded-l-md border border-gray-300 bg-white text-gray-700 hover:bg-gray-50">
+                    <i class="fas fa-angle-double-left"></i>
+                </button>
+                <button id="prevPage"
+                    class="px-3 py-1 border-t border-b border-gray-300 bg-white text-gray-700 hover:bg-gray-50">
+                    <i class="fas fa-angle-left"></i>
+                </button>
+                <div id="pageNumbers" class="flex">
+                    <!-- 页码将通过JavaScript动态生成 -->
+                </div>
+                <button id="nextPage"
+                    class="px-3 py-1 border-t border-b border-gray-300 bg-white text-gray-700 hover:bg-gray-50">
+                    <i class="fas fa-angle-right"></i>
+                </button>
+                <button id="lastPage"
+                    class="px-3 py-1 rounded-r-md border border-gray-300 bg-white text-gray-700 hover:bg-gray-50">
+                    <i class="fas fa-angle-double-right"></i>
+                </button>
+            </nav>
+        </div>
+    </main>
+    <!-- 底部导航（实现静态页面跳转） -->
+    <footer class="bg-white border-t border-gray-200 py-3">
+        <div class="container mx-auto px-6">
+            <div class="grid grid-cols-4 gap-2">
+                <!-- 首页按钮 -->
+                <button 
+                    class="flex flex-col items-center justify-center py-2 text-blue-600"
+                    onclick="navigateTo('index.html')"
+                >
+                    <i class="fas fa-home text-xl"></i>
+                    <span class="text-xs mt-1"> 首页 </span>
+                </button>
+                
+                <!-- 跑腿按钮 -->
+                <button 
+                    class="flex flex-col items-center justify-center py-2 text-gray-600 hover:text-blue-600"
+                    onclick="navigateTo('errand.html')"
+                >
+                    <i class="fas fa-running text-xl"></i>
+                    <span class="text-xs mt-1"> 跑腿 </span>
+                </button>
+                
+                <!-- 发布按钮 -->
+                <button 
+                    class="flex flex-col items-center justify-center py-2 text-gray-600 hover:text-blue-600"
+                    onclick="navigateTo('publish.html')"
+                >
+                    <i class="fas fa-plus-circle text-xl"></i>
+                    <span class="text-xs mt-1"> 发布 </span>
+                </button>
+                
+                <!-- 我的按钮 -->
+                <button 
+                    class="flex flex-col items-center justify-center py-2 text-gray-600 hover:text-blue-600"
+                    onclick="navigateTo('my.html')"
+                >
+                    <i class="fas fa-user text-xl"></i>
+                    <span class="text-xs mt-1"> 我的 </span>
+                </button>
+            </div>
+        </div>
+    </footer>
+    <script>
+        // 实现静态页面跳转
+        function navigateTo(page) {
+            window.location.href = page; // 直接跳转至同目录下的静态页面
+        }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            // 当前页码和每页显示数量
+            let currentPage = 1;
+            let pageSize = parseInt(document.getElementById('pageSize').value);
+            let totalCount = 0; // 存储总数量
+            let filteredProducts = []; // 后端返回的当前页数据
+
+            // 初始化页面，从后端获取数据
+            fetchProducts(currentPage, pageSize);
+
+            // 搜索按钮点击事件
+            document.getElementById('searchBtn').addEventListener('click', function () {
+                currentPage = 1;
+                filterAndFetchProducts();
+            });
+
+            // 每页显示数量变化事件
+            document.getElementById('pageSize').addEventListener('change', function () {
+                pageSize = parseInt(this.value);
+                currentPage = 1;
+                fetchProducts(currentPage, pageSize);
+            });
+
+            // 分页按钮事件
+            document.getElementById('firstPage').addEventListener('click', function () {
+                currentPage = 1;
+                fetchProducts(currentPage, pageSize);
+            });
+
+            document.getElementById('prevPage').addEventListener('click', function () {
+                if (currentPage > 1) {
+                    currentPage--;
+                    fetchProducts(currentPage, pageSize);
+                }
+            });
+
+            document.getElementById('nextPage').addEventListener('click', function () {
+                const totalPages = Math.ceil(totalCount / pageSize);
+                if (currentPage < totalPages) {
+                    currentPage++;
+                    fetchProducts(currentPage, pageSize);
+                }
+            });
+
+            document.getElementById('lastPage').addEventListener('click', function () {
+                const totalPages = Math.ceil(totalCount / pageSize);
+                currentPage = totalPages;
+                fetchProducts(currentPage, pageSize);
+            });
+
+            // 从后端获取商品数据
+            function fetchProducts(page, pageSize) {
+                const productName = document.getElementById('productName').value;
+                const categoryId = document.getElementById('productCategory').value;
+                const minPrice = document.getElementById('minPrice').value;
+                const maxPrice = document.getElementById('maxPrice').value;
+
+                // 处理categoryId，如果为空字符串，设置为null，否则转换为整数
+                const processedCategoryId = categoryId === ''? null : parseInt(categoryId);
+
+                // 简单处理价格区间，如果为空字符串，设置为null，否则转换为整数
+                const processedMinPrice = minPrice === ''? null : parseInt(minPrice);
+                const processedMaxPrice = maxPrice === ''? null : parseInt(maxPrice);
+
+                const token = localStorage.getItem('jwtToken');
+                const headers = new Headers();
+                headers.append('Authorization', `Bearer ${token}`);
+
+                let url = `http://localhost:9527/goods/PageFind?page=${page}&pageSize=${pageSize}&productName=${productName}`;
+
+                if (processedCategoryId!== null) {
+                    url += `&categoryId=${processedCategoryId}`;
+                }
+                if (processedMinPrice!== null) {
+                    url += `&minPrice=${processedMinPrice}`;
+                }
+                if (processedMaxPrice!== null) {
+                    url += `&maxPrice=${processedMaxPrice}`;
+                }
+
+                fetch(url, {
+                    headers: headers
+                })
+                  .then(response => {
+                        if (!response.ok) {
+                            throw new Error('HTTP error! Status:' + response.status);
+                        }
+                        return response.json();
+                    })
+                  .then(data => {
+                        if (data.code === "200") {
+                            totalCount = data.data.total;
+                            filteredProducts = data.data.data; // 直接获取当前页数据
+                            renderProducts();
+                            renderPagination();
+                        } else {
+                            console.log('请求数据失败');
+                        }
+                    })
+                  .catch(error => {
+                        console.error('请求出错:', error);
+                    });
+            }
+
+            // 过滤并从后端获取商品数据
+            function filterAndFetchProducts() {
+                const productName = document.getElementById('productName').value;
+                const categoryId = document.getElementById('productCategory').value;
+                const minPrice = document.getElementById('minPrice').value;
+                const maxPrice = document.getElementById('maxPrice').value;
+
+                // 处理categoryId，如果为空字符串，设置为null，否则转换为整数
+                const processedCategoryId = categoryId === ''? null : parseInt(categoryId);
+
+                // 简单处理价格区间，如果为空字符串，设置为null，否则转换为整数
+                const processedMinPrice = minPrice === ''? null : parseInt(minPrice);
+                const processedMaxPrice = maxPrice === ''? null : parseInt(maxPrice);
+
+                const token = localStorage.getItem('jwtToken');
+                const headers = new Headers();
+                headers.append('Authorization', `Bearer ${token}`);
+
+                let url = `http://localhost:9527/goods/PageFind?page=${currentPage}&pageSize=${pageSize}&productName=${productName}`;
+
+                if (processedCategoryId!== null) {
+                    url += `&categoryId=${processedCategoryId}`;
+                }
+                if (processedMinPrice!== null) {
+                    url += `&minPrice=${processedMinPrice}`;
+                }
+                if (processedMaxPrice!== null) {
+                    url += `&maxPrice=${processedMaxPrice}`;
+                }
+
+                fetch(url, {
+                    headers: headers
+                })
+                  .then(response => {
+                        if (!response.ok) {
+                            throw new Error('HTTP error! Status:' + response.status);
+                        }
+                        return response.json();
+                    })
+                  .then(data => {
+                        if (data.code === "200") {
+                            totalCount = data.data.total;
+                            filteredProducts = data.data.data;
+                            renderProducts();
+                            renderPagination();
+                        } else {
+                            console.log('请求数据失败');
+                        }
+                    })
+                  .catch(error => {
+                        console.error('请求出错:', error);
+                    });
+            }
+
+            // 渲染商品列表（关键修正：直接渲染当前页数据，移除切片逻辑）
+            // 修改renderProducts函数中的商品卡片部分
+            function renderProducts() {
+                const productList = document.getElementById('productList');
+                productList.innerHTML = '';
+                filteredProducts.forEach(function (product) {
+                    const productCard = document.createElement('div');
+                    productCard.className = 'bg-white rounded-lg shadow-md overflow-hidden product-card transition duration-300 cursor-pointer';
+                    
+                    // 确保product.productId存在且有效
+                    if (!product.productId) {
+                        console.error('商品ID不存在:', product);
+                        return;
+                    }
+                    
+                    // 修改这里：使用product.productId而不是product.id
+                    productCard.addEventListener('click', function() {
+                        window.location.href = `product.html?productId=${product.productId}`;
+                    });
+            
+                    let imageSrc = product.photos || 'https://picsum.photos/200/300';
+                    const productName = product.productName || '未知商品';
+                    const productCategory = getCategoryName(product.categoryId) || '未知分类';
+                    const productPrice = product.price || 0;
+                    const productDescription = product.description || '暂无描述';
+            
+                    productCard.innerHTML = `
+                        <img src="${imageSrc}" alt="${productName}" class="w-full h-48 object-cover">
+                        <div class="p-4">
+                            <h3 class="text-lg font-semibold text-gray-800 mb-1 truncate">${productName}</h3>
+                            <div class="flex justify-between items-center mb-2">
+                                <span class="text-sm text-gray-600">${productCategory}</span>
+                                <span class="text-lg font-bold text-blue-600">￥${productPrice}</span>
+                            </div>
+                            <p class="text-sm text-gray-500 line-clamp-2">${productDescription}</p>
+                        </div>
+                    `;
+                    productList.appendChild(productCard);
+                });
+            }
+
+            // 根据 categoryId 获取分类名称
+            function getCategoryName(categoryId) {
+                const categoryMap = {
+                    1: '电子产品',
+                    2: '教材',
+                    3: '护肤品',
+                    4: '化妆品',
+                    5: '服装',
+                    6: '鞋履',
+                    7: '箱包',
+                    8: '家居用品',
+                    9: '办公用品',
+                    10: '体育用品',
+                    11: '玩具',
+                    12: '食品饮料',
+                    13: '数码配件',
+                    14: '图书音像',
+                    15: '乐器',
+                    16: '户外用品'
+                };
+                return categoryMap[categoryId]; // 直接返回映射值，后端应返回数字类型的categoryId
+            }
+
+            // 渲染分页
+            function renderPagination() {
+                const pageNumbers = document.getElementById('pageNumbers');
+                pageNumbers.innerHTML = '';
+                const totalPages = Math.ceil(totalCount / pageSize); // 使用总数量计算总页数
+                const maxVisiblePages = 5;
+                let startPage, endPage;
+                if (totalPages <= maxVisiblePages) {
+                    startPage = 1;
+                    endPage = totalPages;
+                } else {
+                    const half = Math.floor(maxVisiblePages / 2);
+                    if (currentPage <= half + 1) {
+                        startPage = 1;
+                        endPage = maxVisiblePages;
+                    } else if (currentPage >= totalPages - half) {
+                        startPage = totalPages - maxVisiblePages + 1;
+                        endPage = totalPages;
+                    } else {
+                        startPage = currentPage - half;
+                        endPage = currentPage + half;
+                    }
+                }
+                for (let i = startPage; i <= endPage; i++) {
+                    const pageBtn = document.createElement('button');
+                    pageBtn.className = `px-3 py-1 border-t border-b border-gray-300 ${i === currentPage? 'bg-blue-50 text-blue-600 font-medium' : 'bg-white text-gray-700 hover:bg-gray-50'}`;
+                    pageBtn.textContent = i;
+                    pageBtn.addEventListener('click', function () {
+                        currentPage = i;
+                        fetchProducts(currentPage, pageSize);
+                    });
+                    pageNumbers.appendChild(pageBtn);
+                }
+
+                // 更新分页按钮状态
+                document.getElementById('firstPage').disabled = currentPage === 1;
+                document.getElementById('prevPage').disabled = currentPage === 1;
+                document.getElementById('nextPage').disabled = currentPage === totalPages || totalPages === 0;
+                document.getElementById('lastPage').disabled = currentPage === totalPages || totalPages === 0;
+            }
+        });
+    </script>
+</body>
+
+</html>

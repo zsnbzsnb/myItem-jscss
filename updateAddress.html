@@ -1,0 +1,388 @@
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>地址编辑</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+      rel="stylesheet"
+      href="https://cdn.bootcdn.net/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <style>
+      .form-input:focus {
+          border-color: #3b82f6;
+          box-shadow: 0 0 0 1px #3b82f6;
+      }
+    </style>
+  </head>
+  <body class="bg-gray-50 min-h-screen">
+    <div class="container mx-auto px-4 py-8 max-w-2xl">
+      <div class="flex items-center mb-6">
+        <a 
+          href="address.html"
+          class="mr-3 text-gray-600 hover:text-gray-800"
+        >
+          <i class="fas fa-arrow-left text-xl"></i>
+        </a>
+        <div class="flex items-center">
+          <i class="fas fa-map-marker-alt text-blue-500 text-xl mr-2"></i>
+          <h1 class="text-xl font-semibold text-gray-800">编辑收货地址</h1>
+        </div>
+      </div>
+      <div class="bg-white rounded-lg shadow-md p-6">
+        <div class="flex items-center mb-6">
+          <i class="fas fa-map-marker-alt text-blue-500 text-xl mr-2"> </i>
+          <h1 class="text-xl font-semibold text-gray-800">编辑收货地址</h1>
+        </div>
+        <form id="addressForm">
+          <div class="space-y-4">
+            <!-- 收件人姓名 -->
+            <div>
+              <label
+                for="name"
+                class="block text-sm font-medium text-gray-700 mb-1"
+              >
+                收件人姓名
+              </label>
+              <input
+                type="text"
+                id="name"
+                name="name"
+                class="w-full px-3 py-2 border border-gray-300 rounded-md form-input focus:outline-none focus:ring-1 focus:ring-blue-500"
+                placeholder="请输入收件人姓名"
+                required
+              />
+            </div>
+            <!-- 联系电话 -->
+            <div>
+              <label
+                for="phone"
+                class="block text-sm font-medium text-gray-700 mb-1"
+              >
+                联系电话
+              </label>
+              <input
+                type="tel"
+                id="phone"
+                name="phone"
+                class="w-full px-3 py-2 border border-gray-300 rounded-md form-input focus:outline-none focus:ring-1 focus:ring-blue-500"
+                placeholder="请输入联系电话"
+                required
+              />
+            </div>
+            <!-- 省市区选择 -->
+            <div class="grid grid-cols-3 gap-4">
+              <div>
+                <label
+                  for="province"
+                  class="block text-sm font-medium text-gray-700 mb-1"
+                >
+                  省份
+                </label>
+                <select
+                  id="province"
+                  name="province"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-md form-input focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  required
+                >
+                  <option value>请选择省份</option>
+                  <option value="北京">北京</option>
+                  <option value="上海">上海</option>
+                  <option value="广东">广东</option>
+                  <option value="湖南">湖南</option>
+                  <!-- 其他省份选项 -->
+                </select>
+              </div>
+              <div>
+                <label
+                  for="city"
+                  class="block text-sm font-medium text-gray-700 mb-1"
+                >
+                  城市
+                </label>
+                <select
+                  id="city"
+                  name="city"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-md form-input focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  required
+                >
+                  <option value>请选择城市</option>
+                  <!-- 城市选项将通过JS动态加载 -->
+                </select>
+              </div>
+              <div>
+                <label
+                  for="district"
+                  class="block text-sm font-medium text-gray-700 mb-1"
+                >
+                  区县
+                </label>
+                <select
+                  id="district"
+                  name="district"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-md form-input focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  required
+                >
+                  <option value>请选择区县</option>
+                  <!-- 区县选项将通过JS动态加载 -->
+                </select>
+              </div>
+            </div>
+            <!-- 街道 -->
+            <div>
+              <label
+                for="street"
+                class="block text-sm font-medium text-gray-700 mb-1"
+              >
+                街道
+              </label>
+              <input
+                type="text"
+                id="street"
+                name="street"
+                class="w-full px-3 py-2 border border-gray-300 rounded-md form-input focus:outline-none focus:ring-1 focus:ring-blue-500"
+                placeholder="请输入街道名称"
+                required
+              />
+            </div>
+            <!-- 详细地址 -->
+            <div>
+              <label
+                for="detail"
+                class="block text-sm font-medium text-gray-700 mb-1"
+              >
+                详细地址
+              </label>
+              <textarea
+                id="detail"
+                name="detail"
+                rows="3"
+                class="w-full px-3 py-2 border border-gray-300 rounded-md form-input focus:outline-none focus:ring-1 focus:ring-blue-500"
+                placeholder="请输入详细地址，如楼栋号、单元号、门牌号等"
+                required
+              >
+              </textarea>
+            </div>
+          </div>
+          <div class="mt-8">
+            <button
+              type="submit"
+              class="w-full bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-4 rounded-md transition duration-200 ease-in-out transform hover:scale-105"
+            >
+              保存地址
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+    <script>
+      document.addEventListener('DOMContentLoaded', function () {
+        // 省市区联动逻辑
+        var provinceSelect = document.getElementById('province');
+        var citySelect = document.getElementById('city');
+        var districtSelect = document.getElementById('district');
+    
+        // 模拟省份数据
+        // 修改省份数据中的城市名称
+        var provinceData = {
+          '北京': ['北京市'],
+          '上海': ['上海市'],
+          '广东': ['广州市', '深圳市', '珠海市', '东莞市'],
+          '湖南': ['长沙', '株洲', '湘潭', '衡阳', '邵阳', '岳阳', '常德', '张家界', '益阳', '郴州', '永州', '怀化', '娄底', '湘西土家族苗族自治州']
+        };
+    
+        // 修改城市数据中的键名
+        var cityData = {
+          '北京市': ['东城区', '西城区', '朝阳区', '海淀区'],
+          '上海市': ['黄浦区', '徐汇区', '长宁区', '静安区'],
+          '广州市': ['天河区', '越秀区', '海珠区', '荔湾区'],
+          '深圳市': ['福田区', '罗湖区', '南山区', '宝安区'],
+          '珠海市': ['香洲区', '斗门区', '金湾区'],
+          '东莞市': ['莞城区', '南城区', '东城区', '万江区'],
+          '长沙': ['芙蓉区', '天心区', '岳麓区', '开福区', '雨花区', '望城区', '长沙县', '宁乡市', '浏阳市'],
+          '株洲': ['荷塘区', '芦淞区', '石峰区', '天元区', '渌口区', '攸县', '茶陵县', '炎陵县', '醴陵市'],
+          '湘潭': ['雨湖区', '岳塘区', '湘潭县', '湘乡市', '韶山市']
+        };
+    
+        // 省份变化时更新城市
+        provinceSelect.addEventListener('change', function () {
+          var selectedProvince = this.value;
+          citySelect.innerHTML = "<option value=\"\">请选择城市</option>";
+          districtSelect.innerHTML = "<option value=\"\">请选择区县</option>";
+          if (selectedProvince && provinceData[selectedProvince]) {
+            provinceData[selectedProvince].forEach(function (city) {
+              var option = document.createElement('option');
+              option.value = city;
+              option.textContent = city;
+              citySelect.appendChild(option);
+            });
+          }
+        });
+    
+        // 城市变化时更新区县
+        citySelect.addEventListener('change', function () {
+          var selectedCity = this.value;
+          districtSelect.innerHTML = "<option value=\"\">请选择区县</option>";
+          if (selectedCity && cityData[selectedCity]) {
+            cityData[selectedCity].forEach(function (district) {
+              var option = document.createElement('option');
+              option.value = district;
+              option.textContent = district;
+              districtSelect.appendChild(option);
+            });
+          }
+        });
+    
+        // 获取地址ID
+        const urlParams = new URLSearchParams(window.location.search);
+        const addressId = urlParams.get('addressId');
+        
+        if (addressId) {
+          loadAddressData(addressId);
+        }
+    
+        async function loadAddressData(addressId) {
+          const jwtToken = localStorage.getItem('jwtToken');
+          if (!jwtToken) {
+            alert('请先登录');
+            window.location.href = 'login.html';
+            return;
+          }
+    
+          try {
+            const response = await fetch(`http://localhost:9527/address/getAddressByAddressId?addressId=${addressId}`, {
+              method: 'GET',
+              headers: {
+                'Authorization': `Bearer ${jwtToken}`,
+                'Content-Type': 'application/json'
+              }
+            });
+    
+            if (!response.ok) throw new Error('获取地址数据失败');
+            const result = await response.json();
+            
+            if (result.code !== "200") throw new Error(result.message || '获取地址信息失败');
+            
+            const addressData = result.data;
+    
+            // 填充表单
+            document.getElementById('name').value = addressData.receiverName;
+            document.getElementById('phone').value = addressData.receiverPhone;
+            document.getElementById('province').value = addressData.province;
+            
+            // 触发省份变化事件以加载城市
+            provinceSelect.dispatchEvent(new Event('change'));
+            
+            setTimeout(() => {
+              document.getElementById('city').value = addressData.city;
+              citySelect.dispatchEvent(new Event('change'));
+              
+              setTimeout(() => {
+                document.getElementById('district').value = addressData.district;
+              }, 100);
+            }, 100);
+            
+            document.getElementById('street').value = addressData.street;
+            document.getElementById('detail').value = addressData.detailAddress;
+    
+          } catch (error) {
+            console.error('加载地址数据失败:', error);
+            alert(error.message || '加载地址信息失败');
+          }
+        }
+    
+        // 表单提交处理
+        var addressForm = document.getElementById('addressForm');
+        addressForm.addEventListener('submit', function (e) {
+          e.preventDefault();
+    
+          // 表单验证
+          var name = document.getElementById('name').value.trim();
+          var phone = document.getElementById('phone').value.trim();
+          var province = document.getElementById('province').value;
+          var city = document.getElementById('city').value;
+          var district = document.getElementById('district').value;
+          var street = document.getElementById('street').value.trim();
+          var detail = document.getElementById('detail').value.trim();
+          
+          if (!name || !phone || !province || !city || !district || !street || !detail) {
+            alert('请填写完整的地址信息');
+            return;
+          }
+          
+          if (!/^1[3-9]\d{9}$/.test(phone)) {
+            alert('请输入正确的手机号码');
+            return;
+          }
+    
+          // 实际提交代码
+          submitAddressData({
+            addressId: addressId,
+            receiverName: name,
+            receiverPhone: phone,
+            province: province,
+            city: city,
+            district: district,
+            street: street,
+            detailAddress: detail
+          });
+        });
+    
+        async function submitAddressData(data) {
+          try {
+            const jwtToken = localStorage.getItem('jwtToken');
+            if (!jwtToken) {
+              alert('请先登录');
+              window.location.href = 'login.html';
+              return;
+            }
+    
+            // 获取原始地址数据以保留createTime和isDefault
+            const response = await fetch(`http://localhost:9527/address/getAddressByAddressId?addressId=${data.addressId}`, {
+              method: 'GET',
+              headers: {
+                'Authorization': `Bearer ${jwtToken}`,
+                'Content-Type': 'application/json'
+              }
+            });
+    
+            if (!response.ok) throw new Error('获取原始地址数据失败');
+            const result = await response.json();
+            if (result.code !== "200") throw new Error(result.message || '获取原始地址信息失败');
+            
+            const originalData = result.data;
+    
+            // 合并新旧数据
+            const submitData = {
+              ...data,
+              createTime: originalData.createTime,  // 直接使用原始createTime
+              isDefault: originalData.isDefault,
+              modifierId: originalData.modifierId  // 添加modifierId
+            };
+    
+            const updateResponse = await fetch('http://localhost:9527/address/updateByAddressId', {
+              method: 'POST',
+              headers: {
+                'Authorization': `Bearer ${jwtToken}`,
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify(submitData)
+            });
+    
+            const updateResult = await updateResponse.json();
+            if (!updateResponse.ok || updateResult.code !== "200") {
+              throw new Error(updateResult.message || '保存地址失败');
+            }
+            
+            alert('地址保存成功！');
+            window.location.href = 'address.html';
+            
+          } catch (error) {
+            console.error('保存地址失败:', error);
+            alert(error.message || '保存地址失败，请重试');
+          }
+        }
+      });
+    </script>
+  </body>
+</html>

@@ -1,0 +1,309 @@
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>购物车</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+      rel="stylesheet"
+      href="https://cdn.bootcdn.net/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <style>
+      .cart-item:hover {
+          box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+          transform: translateY(-2px);
+          transition: all 0.3s ease;
+      }
+    </style>
+  </head>
+  <body class="bg-gray-100 min-h-screen">
+    <div class="container mx-auto px-4 py-8">
+      <div class="flex items-center mb-8">
+        <button id="back-btn" class="mr-4 text-gray-600 hover:text-gray-800">
+          <i class="fas fa-arrow-left text-2xl"> </i>
+        </button>
+        <h1 class="text-3xl font-bold text-gray-800">我的购物车</h1>
+      </div>
+      <!-- 商品列表 -->
+      <div class="bg-white rounded-lg shadow-md overflow-hidden mb-8">
+        <div
+          class="p-4 border-b border-gray-200 flex justify-between items-center"
+        >
+          <div class="flex items-center">
+            <input
+              type="checkbox"
+              id="select-all"
+              class="h-5 w-5 text-blue-600 rounded mr-3"
+            />
+            <label for="select-all" class="text-gray-700"> 全选 </label>
+          </div>
+          <div class="flex space-x-4">
+            <button
+              id="delete-selected"
+              class="text-red-500 hover:text-red-700"
+            >
+              <i class="fas fa-trash-alt mr-1"> </i>
+              删除
+            </button>
+            <button id="clear-cart" class="text-gray-600 hover:text-gray-800">
+              <i class="fas fa-broom mr-1"> </i>
+              清空
+            </button>
+          </div>
+        </div>
+        <div id="cart-items-container">
+          <!-- 商品项将通过JS动态生成 -->
+        </div>
+      </div>
+      <!-- 结算栏 -->
+      <div class="bg-white rounded-lg shadow-md p-4 sticky bottom-0">
+        <div class="flex justify-between items-center">
+          <div class="flex items-center">
+            <input
+              type="checkbox"
+              id="select-all-bottom"
+              class="h-5 w-5 text-blue-600 rounded mr-3"
+            />
+            <label for="select-all-bottom" class="text-gray-700"> 全选 </label>
+            <span class="text-gray-600 ml-4">
+              已选
+              <span id="selected-count"> 0 </span>
+              件
+            </span>
+          </div>
+          <div class="flex items-center space-x-6">
+            <div class="text-right">
+              <p class="text-gray-600">
+                合计:
+                <span class="text-xl font-bold text-red-500" id="total-price">
+                  ¥0.00
+                </span>
+              </p>
+              <p class="text-xs text-gray-400">不含运费</p>
+            </div>
+            <button
+              id="checkout-btn"
+              class="bg-red-500 hover:bg-red-600 text-white px-8 py-3 rounded-full font-bold transition duration-300"
+            >
+              去结算
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <script>
+      document.addEventListener('DOMContentLoaded', function () {
+          // 获取来源页面参数
+          const urlParams = new URLSearchParams(window.location.search);
+          const fromPage = urlParams.get('from');
+          
+          // 返回按钮点击事件
+          document.getElementById('back-btn').addEventListener('click', function() {
+              if (fromPage === 'my') {
+                  window.location.href = 'my.html';
+              } else if (fromPage === 'main') {
+                  window.location.href = 'Main.html';
+              } else {
+                  // 默认返回上一页，如果没有则返回主页
+                  if (document.referrer && document.referrer.includes(window.location.hostname)) {
+                      window.history.back();
+                  } else {
+                      window.location.href = 'Main.html';
+                  }
+              }
+          });
+
+        // 模拟购物车数据
+        var cartItems = [{
+          id: 1,
+          name: '高端游戏笔记本电脑',
+          price: 8999,
+          quantity: 1,
+          selected: false,
+          image: 'https://aidev.gemcoder.com/staticResource/echoAiSystemImages/82bc6b1cff06703b82cb958a0530eff2.png'
+        }, {
+          id: 2,
+          name: '无线降噪耳机',
+          price: 1299,
+          quantity: 2,
+          selected: false,
+          image: 'https://aidev.gemcoder.com/staticResource/echoAiSystemImages/8f804728a25a5f1b4e8962faf8ea613b.png'
+        }, {
+          id: 3,
+          name: '智能手表',
+          price: 1999,
+          quantity: 1,
+          selected: false,
+          image: 'https://aidev.gemcoder.com/staticResource/echoAiSystemImages/08e96e7ba53f70d8805974543bb9a99b.png'
+        }];
+        var cartItemsContainer = document.getElementById('cart-items-container');
+        var selectedCountElement = document.getElementById('selected-count');
+        var totalPriceElement = document.getElementById('total-price');
+        var selectAllCheckbox = document.getElementById('select-all');
+        var selectAllBottomCheckbox = document.getElementById('select-all-bottom');
+        var deleteSelectedBtn = document.getElementById('delete-selected');
+        var clearCartBtn = document.getElementById('clear-cart');
+        var checkoutBtn = document.getElementById('checkout-btn');
+        var backBtn = document.getElementById('back-btn');
+
+        // 返回按钮点击事件
+        backBtn.addEventListener('click', function () {
+          window.history.back();
+        });
+        // 渲染购物车商品
+        function renderCartItems() {
+          cartItemsContainer.innerHTML = '';
+          if (cartItems.length === 0) {
+            cartItemsContainer.innerHTML = "\n                        <div class=\"p-8 text-center text-gray-500\">\n                            <i class=\"fas fa-shopping-cart text-4xl mb-4\"></i>\n                            <p class=\"text-xl\">\u60A8\u7684\u8D2D\u7269\u8F66\u662F\u7A7A\u7684</p>\n                            <p class=\"text-sm mt-2\">\u5FEB\u53BB\u6311\u9009\u5FC3\u4EEA\u7684\u5546\u54C1\u5427</p>\n                        </div>\n                    ";
+            return;
+          }
+          cartItems.forEach(function (item) {
+            var itemElement = document.createElement('div');
+            itemElement.className = 'cart-item p-4 border-b border-gray-200 flex items-center hover:bg-gray-50';
+            itemElement.dataset.id = item.id;
+            itemElement.innerHTML = "\n                        <div class=\"flex items-center w-full\">\n                            <div class=\"flex items-center w-1/2\">\n                                <input type=\"checkbox\" class=\"item-checkbox h-5 w-5 text-blue-600 rounded mr-4\" ".concat(item.selected ? 'checked' : '', ">\n                                <div class=\"flex-shrink-0 w-20 h-20 rounded overflow-hidden\">\n                                    <img src=\"").concat(item.image, "\" alt=\"").concat(item.name, "\" class=\"w-full h-full object-cover\">\n                                </div>\n                                <div class=\"ml-4\">\n                                    <h3 class=\"text-lg font-medium text-gray-800\">").concat(item.name, "</h3>\n                                    <p class=\"text-red-500 font-bold mt-1\">\xA5").concat(item.price.toFixed(2), "</p>\n                                </div>\n                            </div>\n                            <div class=\"flex items-center justify-between w-1/2\">\n                                <div class=\"flex items-center\">\n                                    <button class=\"quantity-btn decrease w-8 h-8 border border-gray-300 rounded-l bg-gray-100 text-gray-600 hover:bg-gray-200\">\n                                        <i class=\"fas fa-minus\"></i>\n                                    </button>\n                                    <input type=\"number\" min=\"1\" value=\"").concat(item.quantity, "\" class=\"quantity-input w-12 h-8 border-t border-b border-gray-300 text-center\">\n                                    <button class=\"quantity-btn increase w-8 h-8 border border-gray-300 rounded-r bg-gray-100 text-gray-600 hover:bg-gray-200\">\n                                        <i class=\"fas fa-plus\"></i>\n                                    </button>\n                                </div>\n                                <div class=\"text-right\">\n                                    <p class=\"text-gray-600\">\u5C0F\u8BA1: <span class=\"text-red-500 font-bold\">\xA5").concat((item.price * item.quantity).toFixed(2), "</span></p>\n                                    <button class=\"delete-item text-gray-400 hover:text-red-500 mt-1\">\n                                        <i class=\"fas fa-trash-alt\"></i>\n                                    </button>\n                                </div>\n                            </div>\n                        </div>\n                    ");
+            cartItemsContainer.appendChild(itemElement);
+          });
+          updateSummary();
+        }
+        // 更新汇总信息
+        function updateSummary() {
+          var selectedItems = cartItems.filter(function (item) {
+            return item.selected;
+          });
+          var selectedCount = selectedItems.length;
+          var totalPrice = selectedItems.reduce(function (sum, item) {
+            return sum + item.price * item.quantity;
+          }, 0);
+          selectedCountElement.textContent = selectedCount;
+          totalPriceElement.textContent = "\xA5".concat(totalPrice.toFixed(2));
+
+          // 更新全选状态
+          var allSelected = cartItems.length > 0 && cartItems.every(function (item) {
+            return item.selected;
+          });
+          selectAllCheckbox.checked = allSelected;
+          selectAllBottomCheckbox.checked = allSelected;
+        }
+        // 初始化
+        renderCartItems();
+        // 事件委托处理
+        cartItemsContainer.addEventListener('click', function (e) {
+          var target = e.target;
+          var itemElement = target.closest('.cart-item');
+          if (!itemElement) return;
+          var itemId = parseInt(itemElement.dataset.id);
+          var item = cartItems.find(function (item) {
+            return item.id === itemId;
+          });
+          if (!item) return;
+
+          // 处理复选框选择
+          if (target.classList.contains('item-checkbox')) {
+            item.selected = target.checked;
+            updateSummary();
+          }
+
+          // 处理删除单个商品
+          if (target.classList.contains('delete-item') || target.closest('.delete-item')) {
+            var index = cartItems.findIndex(function (i) {
+              return i.id === itemId;
+            });
+            if (index !== -1) {
+              cartItems.splice(index, 1);
+              renderCartItems();
+            }
+          }
+
+          // 处理数量减少
+          if (target.classList.contains('decrease') || target.closest('.decrease')) {
+            if (item.quantity > 1) {
+              item.quantity--;
+              renderCartItems();
+            }
+          }
+
+          // 处理数量增加
+          if (target.classList.contains('increase') || target.closest('.increase')) {
+            item.quantity++;
+            renderCartItems();
+          }
+        });
+        // 处理输入框数量变化
+        cartItemsContainer.addEventListener('change', function (e) {
+          if (e.target.classList.contains('quantity-input')) {
+            var itemElement = e.target.closest('.cart-item');
+            var itemId = parseInt(itemElement.dataset.id);
+            var item = cartItems.find(function (item) {
+              return item.id === itemId;
+            });
+            var newQuantity = parseInt(e.target.value);
+            if (newQuantity > 0) {
+              item.quantity = newQuantity;
+              renderCartItems();
+            } else {
+              e.target.value = item.quantity;
+            }
+          }
+        });
+        // 全选/取消全选
+        function handleSelectAll(checkbox) {
+          var isChecked = checkbox.checked;
+          cartItems.forEach(function (item) {
+            item.selected = isChecked;
+          });
+          renderCartItems();
+        }
+        selectAllCheckbox.addEventListener('change', function () {
+          handleSelectAll(this);
+          selectAllBottomCheckbox.checked = this.checked;
+        });
+        selectAllBottomCheckbox.addEventListener('change', function () {
+          handleSelectAll(this);
+          selectAllCheckbox.checked = this.checked;
+        });
+        // 删除选中商品
+        deleteSelectedBtn.addEventListener('click', function () {
+          var selectedItems = cartItems.filter(function (item) {
+            return item.selected;
+          });
+          if (selectedItems.length === 0) {
+            alert('请先选择要删除的商品');
+            return;
+          }
+          if (confirm("\u786E\u5B9A\u8981\u5220\u9664\u9009\u4E2D\u7684 ".concat(selectedItems.length, " \u4EF6\u5546\u54C1\u5417\uFF1F"))) {
+            for (var i = cartItems.length - 1; i >= 0; i--) {
+              if (cartItems[i].selected) {
+                cartItems.splice(i, 1);
+              }
+            }
+            renderCartItems();
+          }
+        });
+        // 清空购物车
+        clearCartBtn.addEventListener('click', function () {
+          if (cartItems.length === 0) {
+            alert('购物车已经是空的');
+            return;
+          }
+          if (confirm('确定要清空购物车吗？')) {
+            cartItems.length = 0;
+            renderCartItems();
+          }
+        });
+        // 结算按钮
+        checkoutBtn.addEventListener('click', function () {
+          var selectedItems = cartItems.filter(function (item) {
+            return item.selected;
+          });
+          if (selectedItems.length === 0) {
+            alert('请先选择要结算的商品');
+            return;
+          }
+          alert("\u5DF2\u63D0\u4EA4\u8BA2\u5355\uFF0C\u603B\u91D1\u989D: \xA5".concat(totalPriceElement.textContent.substring(1)));
+          // 这里可以添加实际的订单提交逻辑
+        });
+      });
+    </script>
+  </body>
+</html>

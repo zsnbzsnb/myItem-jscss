@@ -344,35 +344,45 @@
             return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
         }
 
-        // 上传图片到OSS（保持与发布页面一致的配置）
+        // 上传图片到OSS（修改后的版本）
         async function uploadImageToOSS(file, jwtToken) {
             try {
-                // 获取OSS上传凭证（保持与发布页面相同的接口）
-                const authResponse = await fetch('http://localhost:9527/goods/getOSSUploadAuth', {
-                    headers: { 'Authorization': `Bearer ${jwtToken}` },
+                // 获取OSS配置
+                const response = await fetch('http://localhost:9527/goods/getOssConfig', {
+                    headers: { 'Authorization': `Bearer ${jwtToken}` }
                 });
-
-                if (!authResponse.ok) throw new Error('获取OSS上传凭证失败');
                 
-                const authData = await authResponse.json();
-                if (authData.code !== "200") throw new Error(authData.message);
-
-                // 使用与发布页面相同的参数格式
-                const { policy, OSSAccessKeyId, signature, host } = authData.data;
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.message || '获取OSS配置失败');
+                }
+                
+                const config = await response.json();
+                const fileName = `${Date.now()}_${file.name}`;
                 const formData = new FormData();
-                const fileName = `products/${Date.now()}_${file.name}`;  // 保持相同的目录结构
-
-                // 添加必须的表单字段
-                formData.append('key', fileName);
-                formData.append('policy', policy);
-                formData.append('OSSAccessKeyId', OSSAccessKeyId);
-                formData.append('signature', signature);
-                formData.append('file', file);
-
-                // 执行上传
-                await fetch(host, { method: 'POST', body: formData });
                 
-                return `${host}/${fileName}`;  // 返回完整OSS地址
+                // 确保目录格式正确
+                const dir = config.dir.endsWith('/') ? config.dir : config.dir ? `${config.dir}/` : '';
+                
+                // 添加表单字段
+                formData.append('OSSAccessKeyId', config.accessId);
+                formData.append('policy', config.policy);
+                formData.append('signature', config.signature);
+                formData.append('key', `${dir}${fileName}`);
+                formData.append('file', file);
+        
+                // 执行上传
+                const uploadResponse = await fetch(config.host, {
+                    method: 'POST',
+                    body: formData
+                });
+        
+                if (uploadResponse.status === 204) {
+                    return `${config.host}/${dir}${fileName}`;
+                } else {
+                    const text = await uploadResponse.text();
+                    throw new Error(`图片上传失败，状态码: ${uploadResponse.status}, 响应内容: ${text}`);
+                }
             } catch (error) {
                 console.error('上传图片到OSS错误:', error);
                 throw error;

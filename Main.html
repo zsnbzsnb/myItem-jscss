@@ -93,12 +93,13 @@
             <h2 class="text-lg font-semibold text-gray-800">商品列表</h2>
             <div class="flex items-center">
                 <span class="text-sm text-gray-600 mr-2"> 每页显示 </span>
+                <!-- 修改每页显示数量选项 -->
                 <select id="pageSize"
                     class="px-3 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-                    <option value="5">5条</option>
-                    <option value="10" selected>10条</option>
-                    <option value="15">15条</option>
-                    <option value="20">20条</option>
+                    <option value="8">8条</option>
+                    <option value="16" selected>16条</option>
+                    <option value="24">24条</option>
+                    <option value="32">32条</option>
                 </select>
             </div>
         </div>
@@ -182,7 +183,9 @@
         document.addEventListener('DOMContentLoaded', function () {
             // 当前页码和每页显示数量
             let currentPage = 1;
-            let pageSize = parseInt(document.getElementById('pageSize').value);
+            // 修改后的初始化pageSize（已在HTML中设置默认值，无需代码修改）
+            let pageSize = parseInt(document.getElementById('pageSize').value); 
+            // 后续所有包含pageSize参数的请求会自动使用新值（无需额外修改）
             let totalCount = 0; // 存储总数量
             let filteredProducts = []; // 后端返回的当前页数据
 

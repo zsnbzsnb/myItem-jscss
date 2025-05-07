@@ -161,10 +161,10 @@
           </div>
           <!-- 操作按钮 -->
           <div class="flex justify-end space-x-4 pt-4">
-            <!-- 修改取消按钮，添加点击事件 -->
+            <!-- 修改取消按钮，使其返回到my.html -->
             <button
                 type="button"
-                onclick="window.history.back()"
+                onclick="window.location.href='my.html'"
                 class="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-100 transition"
             >
                 取消
@@ -243,12 +243,17 @@
     </div>
     <script>
       document.addEventListener('DOMContentLoaded', function () {
+        // 确保这个函数被正确调用
+        console.log('DOM已加载，开始获取用户信息'); // 添加调试日志
+        
         // 返回按钮
         var backBtn = document.getElementById('backBtn');
-        backBtn.addEventListener('click', function (e) {
-          e.stopPropagation();
-          window.history.back();
-        });
+        if (backBtn) {  // 添加null检查
+            backBtn.addEventListener('click', function (e) {
+                e.stopPropagation();
+                window.history.back();
+            });
+        }
     
         // 头像编辑相关元素
         var avatarModal = document.getElementById('avatarModal');
@@ -261,20 +266,28 @@
         var avatarPreview = document.getElementById('avatarPreview');
         var saveAvatar = document.getElementById('saveAvatar');
     
-        // 打开头像编辑模态框
-        editAvatarBtn.addEventListener('click', function (e) {
-          e.stopPropagation();
-          avatarModal.classList.remove('hidden');
-        });
-    
         // 关闭头像编辑模态框
         closeAvatarModal.addEventListener('click', function (e) {
-          e.stopPropagation();
-          avatarModal.classList.add('hidden');
+            e.preventDefault();
+            e.stopPropagation();
+            avatarModal.classList.add('hidden');
         });
+    
         cancelAvatarChange.addEventListener('click', function (e) {
-          e.stopPropagation();
-          avatarModal.classList.add('hidden');
+            e.preventDefault();
+            e.stopPropagation();
+            avatarModal.classList.add('hidden');
+        });
+    
+        // 打开头像编辑模态框
+        editAvatarBtn.addEventListener('click', function (e) {
+            e.stopPropagation();
+            // 获取当前头像URL
+            const currentAvatar = avatarPreview.src;
+            // 设置预览图为当前头像
+            avatarUploadPreview.src = currentAvatar;
+            
+            avatarModal.classList.remove('hidden');
         });
     
         // 触发文件选择
@@ -295,31 +308,90 @@
           }
         });
     
+        // 获取OSS配置
+        async function getOssConfig() {
+            const jwtToken = getJwtToken();
+            try {
+                const response = await fetch('http://localhost:9527/goods/getOssConfig', {
+                    headers: {
+                        'Authorization': `Bearer ${jwtToken}`
+                    }
+                });
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.message || '获取OSS配置失败');
+                }
+                return await response.json();
+            } catch (error) {
+                console.error('获取OSS配置错误:', error);
+                throw error;
+            }
+        }
+    
         // 保存头像
         saveAvatar.addEventListener('click', async function (e) {
-          e.stopPropagation();
-          if (avatarUploadPreview.src) {
-            avatarPreview.src = avatarUploadPreview.src;
-            avatarModal.classList.add('hidden');
+            e.stopPropagation();
+            
+            const file = avatarUpload.files[0];
+            if (!file) {
+                alert('请先选择头像图片');
+                return;
+            }
     
-            // 实际项目中这里应该是AJAX请求上传头像
-            // const formData = new FormData();
-            // formData.append('avatar', avatarUpload.files[0]);
-            // fetch('/api/uploadAvatar', {
-            //     method: 'POST',
-            //     body: formData
-            // })
-            // .then(response => response.json())
-            // .then(data => {
-            //     avatarPreview.src = data.avatarUrl;
-            //     avatarModal.classList.add('hidden');
-            // })
-            // .catch(error => {
-            //     console.error('Error:', error);
-            // });
-          } else {
-            console.error('头像预览地址为空，无法保存');
-          }
+            try {
+                // 获取OSS配置
+                const config = await getOssConfig();
+                console.log('获取到的OSS配置:', config);
+    
+                const fileName = `avatar_${Date.now()}_${file.name}`;
+                const formData = new FormData();
+                formData.append('OSSAccessKeyId', config.accessId);
+                formData.append('policy', config.policy);
+                formData.append('signature', config.signature);
+                const dir = config.dir.endsWith('/') ? config.dir : config.dir ? `${config.dir}/` : '';
+                formData.append('key', `${dir}${fileName}`);
+                formData.append('file', file);
+    
+                // 上传到OSS
+                const uploadResponse = await fetch(config.host, {
+                    method: 'POST',
+                    body: formData
+                });
+    
+                if (uploadResponse.status === 204) {
+                    const imgUrl = `${config.host}/${dir}${fileName}`;
+                    console.log('头像上传成功:', imgUrl);
+                    
+                    // 更新预览
+                    avatarPreview.src = imgUrl;
+                    
+                    // 使用/user/update接口更新用户信息
+                    const jwtToken = getJwtToken();
+                    const updateResponse = await fetch('http://localhost:9527/user/update', {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${jwtToken}`,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            avatar: imgUrl  // 修改为只使用avatar字段
+                        })
+                    });
+    
+                    if (updateResponse.ok) {
+                        avatarModal.classList.add('hidden');
+                        alert('头像更新成功');
+                    } else {
+                        throw new Error('头像信息保存失败');
+                    }
+                } else {
+                    const text = await uploadResponse.text();
+                    throw new Error(`头像上传失败，状态码: ${uploadResponse.status}, 响应内容: ${text}`);
+                }
+            } catch (error) {
+                console.error('头像上传失败:', error);
+                alert('头像上传失败: ' + error.message);
+            }
         });
     
         // 获取 JWT 令牌
@@ -329,8 +401,10 @@
     
         // 获取用户信息并渲染到界面
         async function fetchUserInfo() {
+          console.log('开始获取用户信息');
           const jwtToken = getJwtToken();
           if (!jwtToken) {
+              console.warn('未找到JWT令牌，重定向到登录页');
               alert('请先登录');
               window.location.href = 'login.html';
               return;
@@ -353,13 +427,22 @@
               }
     
               if (!userResponse.ok) {
-                  throw new Error('获取用户信息失败');
+                  throw new Error(`获取用户信息失败，状态码: ${userResponse.status}`);
               }
     
             const userData = await userResponse.json();
             document.getElementById('username').value = userData.data.username;
             document.getElementById('email').value = userData.data.email;
             document.getElementById('phone').value = userData.data.phone;
+    
+            // 渲染用户头像
+            const avatarPreview = document.getElementById('avatarPreview');
+            if (userData.data.avatar) {
+                avatarPreview.src = userData.data.avatar; // 使用后端返回的头像URL
+            } else {
+                // 保持默认头像
+                avatarPreview.src = "https://aidev.gemcoder.com/staticResource/echoAiSystemImages/3d7de71ad85428e008655634e2d620de.png";
+            }
     
             // 性别英文转中文映射
             const genderMap = {
@@ -463,7 +546,10 @@
         });
     
         // 初始化加载用户信息
-        fetchUserInfo();
+        fetchUserInfo().catch(error => {
+            console.error('获取用户信息失败:', error);
+            alert('获取用户信息失败，请刷新页面重试');
+        });
       });
     </script>
   </body>

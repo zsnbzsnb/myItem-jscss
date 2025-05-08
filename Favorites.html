@@ -1,0 +1,257 @@
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>商品收藏夹</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+      rel="stylesheet"
+      href="https://cdn.bootcdn.net/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <style>
+      .favorite-item:hover {
+          transform: translateY(-5px);
+          box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+      }
+      .favorite-item {
+          transition: all 0.3s ease;
+      }
+    </style>
+  </head>
+  <body class="bg-gray-50 min-h-screen">
+    <div class="container mx-auto px-4 py-8">
+      <!-- 标题区域 -->
+      <div class="flex justify-between items-center mb-8">
+        <h1 class="text-3xl font-bold text-gray-800">我的收藏夹</h1>
+        <div class="flex space-x-4">
+          <button
+            class="px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-100 transition"
+          >
+            <i class="fas fa-filter mr-2"> </i>
+            筛选
+          </button>
+          <button
+            class="px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-100 transition"
+          >
+            <i class="fas fa-sort mr-2"> </i>
+            排序
+          </button>
+        </div>
+      </div>
+      <!-- 商品列表 -->
+      <div
+        class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6"
+      >
+        <!-- 商品卡片1 -->
+        <div
+          class="favorite-item bg-white rounded-xl shadow-md overflow-hidden"
+        >
+          <div class="relative">
+            <img
+              src="https://aidev.gemcoder.com/staticResource/echoAiSystemImages/7bebe81d46cdcc3e9776ae11ab14386d.png"
+              alt="游戏笔记本"
+              class="w-full h-48 object-cover"
+            />
+            <button
+              class="absolute top-2 right-2 bg-white rounded-full p-2 text-red-500 hover:text-red-600 transition"
+            >
+              <i class="fas fa-heart"> </i>
+            </button>
+          </div>
+          <div class="p-4">
+            <h3 class="text-lg font-semibold text-gray-800 mb-1">
+              超极游戏笔记本
+            </h3>
+            <p class="text-gray-500 text-sm mb-2">
+              高性能处理器 | 16GB内存 | 1TB SSD
+            </p>
+            <div class="flex justify-between items-center">
+              <span class="text-red-500 font-bold text-lg"> ¥8,999 </span>
+              <button
+                class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded-lg transition"
+              >
+                <i class="fas fa-shopping-cart mr-1"> </i>
+                加入购物车
+              </button>
+            </div>
+          </div>
+        </div>
+        <!-- 商品卡片2 -->
+        <div
+          class="favorite-item bg-white rounded-xl shadow-md overflow-hidden"
+        >
+          <div class="relative">
+            <img
+              src="https://aidev.gemcoder.com/staticResource/echoAiSystemImages/8453266b8a98a2a4c79f6bbb55461840.png"
+              alt="无线耳机"
+              class="w-full h-48 object-cover"
+            />
+            <button
+              class="absolute top-2 right-2 bg-white rounded-full p-2 text-red-500 hover:text-red-600 transition"
+            >
+              <i class="fas fa-heart"> </i>
+            </button>
+          </div>
+          <div class="p-4">
+            <h3 class="text-lg font-semibold text-gray-800 mb-1">
+              降噪无线耳机
+            </h3>
+            <p class="text-gray-500 text-sm mb-2">
+              主动降噪 | 30小时续航 | 蓝牙5.0
+            </p>
+            <div class="flex justify-between items-center">
+              <span class="text-red-500 font-bold text-lg"> ¥1,299 </span>
+              <button
+                class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded-lg transition"
+              >
+                <i class="fas fa-shopping-cart mr-1"> </i>
+                加入购物车
+              </button>
+            </div>
+          </div>
+        </div>
+        <!-- 商品卡片3 -->
+        <div
+          class="favorite-item bg-white rounded-xl shadow-md overflow-hidden"
+        >
+          <div class="relative">
+            <img
+              src="https://aidev.gemcoder.com/staticResource/echoAiSystemImages/5457d7cc6bfb5793bbe1262a11ec2247.png"
+              alt="智能手表"
+              class="w-full h-48 object-cover"
+            />
+            <button
+              class="absolute top-2 right-2 bg-white rounded-full p-2 text-red-500 hover:text-red-600 transition"
+            >
+              <i class="fas fa-heart"> </i>
+            </button>
+          </div>
+          <div class="p-4">
+            <h3 class="text-lg font-semibold text-gray-800 mb-1">
+              智能健康手表
+            </h3>
+            <p class="text-gray-500 text-sm mb-2">
+              心率监测 | 血氧检测 | 7天续航
+            </p>
+            <div class="flex justify-between items-center">
+              <span class="text-red-500 font-bold text-lg"> ¥899 </span>
+              <button
+                class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded-lg transition"
+              >
+                <i class="fas fa-shopping-cart mr-1"> </i>
+                加入购物车
+              </button>
+            </div>
+          </div>
+        </div>
+        <!-- 商品卡片4 -->
+        <div
+          class="favorite-item bg-white rounded-xl shadow-md overflow-hidden"
+        >
+          <div class="relative">
+            <img
+              src="https://aidev.gemcoder.com/staticResource/echoAiSystemImages/6e0c6d0324d07dcdbfc9584568afd1e0.png"
+              alt="单反相机"
+              class="w-full h-48 object-cover"
+            />
+            <button
+              class="absolute top-2 right-2 bg-white rounded-full p-2 text-red-500 hover:text-red-600 transition"
+            >
+              <i class="fas fa-heart"> </i>
+            </button>
+          </div>
+          <div class="p-4">
+            <h3 class="text-lg font-semibold text-gray-800 mb-1">
+              专业单反相机
+            </h3>
+            <p class="text-gray-500 text-sm mb-2">全画幅 | 4K视频 | 双卡槽</p>
+            <div class="flex justify-between items-center">
+              <span class="text-red-500 font-bold text-lg"> ¥12,999 </span>
+              <button
+                class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded-lg transition"
+              >
+                <i class="fas fa-shopping-cart mr-1"> </i>
+                加入购物车
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- 分页控制 -->
+      <div class="flex justify-center mt-10">
+        <nav class="flex items-center space-x-2">
+          <button
+            class="px-3 py-1 rounded border border-gray-300 text-gray-700 hover:bg-gray-100"
+          >
+            <i class="fas fa-chevron-left"> </i>
+          </button>
+          <button class="px-3 py-1 rounded bg-blue-500 text-white">1</button>
+          <button
+            class="px-3 py-1 rounded border border-gray-300 text-gray-700 hover:bg-gray-100"
+          >
+            2
+          </button>
+          <button
+            class="px-3 py-1 rounded border border-gray-300 text-gray-700 hover:bg-gray-100"
+          >
+            3
+          </button>
+          <button
+            class="px-3 py-1 rounded border border-gray-300 text-gray-700 hover:bg-gray-100"
+          >
+            <i class="fas fa-chevron-right"> </i>
+          </button>
+        </nav>
+      </div>
+    </div>
+    <script>
+      // 收藏/取消收藏功能
+      document.querySelectorAll('.fa-heart').forEach(function (heartIcon) {
+        heartIcon.addEventListener('click', function (e) {
+          e.preventDefault();
+          var parentItem = this.closest('.favorite-item');
+          if (this.classList.contains('text-red-500')) {
+            this.classList.remove('text-red-500');
+            this.classList.add('text-gray-400');
+            // 这里可以添加取消收藏的API调用
+            console.log('取消收藏商品');
+          } else {
+            this.classList.remove('text-gray-400');
+            this.classList.add('text-red-500');
+            // 这里可以添加收藏的API调用
+            console.log('收藏商品');
+          }
+        });
+      });
+      // 加入购物车功能
+      document.querySelectorAll('button:has(.fa-shopping-cart)').forEach(function (button) {
+        button.addEventListener('click', function () {
+          var productName = this.closest('.favorite-item').querySelector('h3').textContent;
+          var price = this.closest('.favorite-item').querySelector('span').textContent;
+
+          // 这里可以添加加入购物车的API调用
+          console.log("\u5C06 ".concat(productName, " (").concat(price, ") \u52A0\u5165\u8D2D\u7269\u8F66"));
+
+          // 显示添加成功的提示
+          alert("\u5DF2\u6210\u529F\u5C06 ".concat(productName, " \u52A0\u5165\u8D2D\u7269\u8F66"));
+        });
+      });
+      // 筛选和排序按钮功能
+      document.querySelectorAll('button:has(.fa-filter), button:has(.fa-sort)').forEach(function (button) {
+        button.addEventListener('click', function () {
+          var action = this.querySelector('i').classList.contains('fa-filter') ? '筛选' : '排序';
+          console.log("\u70B9\u51FB\u4E86".concat(action, "\u6309\u94AE"));
+          // 这里可以添加筛选或排序的逻辑
+        });
+      });
+      // 分页按钮功能
+      document.querySelectorAll('nav button:not(:has(i))').forEach(function (button) {
+        button.addEventListener('click', function () {
+          var pageNum = this.textContent;
+          console.log("\u5207\u6362\u5230\u7B2C ".concat(pageNum, " \u9875"));
+          // 这里可以添加分页加载的逻辑
+        });
+      });
+    </script>
+  </body>
+</html>

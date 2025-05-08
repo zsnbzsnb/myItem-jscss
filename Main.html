@@ -320,6 +320,12 @@
                     headers: headers
                 })
                   .then(response => {
+                        // 新增401状态码检查
+                        if (response.status === 401) {
+                            localStorage.removeItem('jwtToken');
+                            window.location.href = 'login.html';
+                            return Promise.reject('Unauthorized');
+                        }
                         if (!response.ok) {
                             throw new Error('HTTP error! Status:' + response.status);
                         }

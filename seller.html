@@ -1,0 +1,356 @@
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>商家界面</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+      rel="stylesheet"
+      href="https://cdn.bootcdn.net/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <style>
+      .transition-all {
+          transition: all 0.3s ease;
+      }
+      .product-card:hover {
+          transform: translateY(-5px);
+          box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+      }
+    </style>
+  </head>
+  <body class="bg-gray-50">
+    <!-- 顶部导航栏 -->
+    <header class="bg-white shadow-sm sticky top-0 z-10">
+      <div
+        class="container mx-auto px-4 py-3 flex justify-between items-center"
+      >
+        <div class="flex items-center space-x-2">
+          <i class="fas fa-store text-blue-500 text-2xl"> </i>
+          <h1 class="text-xl font-bold text-gray-800">商家名称</h1>
+        </div>
+        <div class="flex items-center space-x-4">
+          <div class="relative">
+            <input
+              type="text"
+              placeholder="搜索商品..."
+              class="pl-10 pr-4 py-2 border rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            />
+            <i class="fas fa-search absolute left-3 top-3 text-gray-400"> </i>
+          </div>
+          <button
+            class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-full transition-all"
+          >
+            <i class="fas fa-shopping-cart mr-2"> </i>
+            购物车
+          </button>
+        </div>
+      </div>
+    </header>
+    <!-- 商家信息区 -->
+    <section class="bg-white py-8">
+      <div class="container mx-auto px-4">
+        <div class="flex flex-col md:flex-row items-center">
+          <div
+            class="w-32 h-32 rounded-full overflow-hidden border-4 border-white shadow-lg mb-4 md:mb-0 md:mr-8"
+          >
+            <img
+              src="https://aidev.gemcoder.com/staticResource/echoAiSystemImages/515047daee23e3c0e9c110a783426e69.png"
+              alt="商家logo"
+              class="w-full h-full object-cover"
+            />
+          </div>
+          <div class="flex-1">
+            <h2 class="text-2xl font-bold text-gray-800 mb-2">商家名称</h2>
+            <div class="flex items-center mb-2">
+              <div class="flex text-yellow-400 mr-2">
+                <i class="fas fa-star"> </i>
+                <i class="fas fa-star"> </i>
+                <i class="fas fa-star"> </i>
+                <i class="fas fa-star"> </i>
+                <i class="fas fa-star-half-alt"> </i>
+              </div>
+              <span class="text-gray-600"> 4.5 (128条评价) </span>
+            </div>
+            <p class="text-gray-600 mb-4">专业销售各类优质商品，提供优质服务</p>
+            <div class="flex flex-wrap gap-2">
+              <span
+                class="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm"
+              >
+                <i class="fas fa-id-card mr-1"> </i>
+                已实名
+              </span>
+              <span
+                class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm"
+              >
+                <i class="fas fa-certificate mr-1"> </i>
+                已认证
+              </span>
+              <span
+                class="bg-purple-100 text-purple-800 px-3 py-1 rounded-full text-sm"
+              >
+                <i class="fas fa-file-signature mr-1"> </i>
+                已签约
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+    <!-- 商品分类导航 -->
+    <section class="bg-gray-100 py-4 sticky top-16 z-10">
+      <div class="container mx-auto px-4">
+        <div class="flex overflow-x-auto space-x-4 pb-2">
+          <button
+            class="category-btn bg-blue-500 text-white px-4 py-2 rounded-full whitespace-nowrap transition-all"
+            data-category="all"
+          >
+            <i class="fas fa-list mr-1"> </i>
+            全部商品
+          </button>
+          <button
+            class="category-btn bg-white hover:bg-gray-200 px-4 py-2 rounded-full whitespace-nowrap transition-all"
+            data-category="electronics"
+          >
+            <i class="fas fa-laptop mr-1"> </i>
+            电子产品
+          </button>
+          <button
+            class="category-btn bg-white hover:bg-gray-200 px-4 py-2 rounded-full whitespace-nowrap transition-all"
+            data-category="clothing"
+          >
+            <i class="fas fa-tshirt mr-1"> </i>
+            服装服饰
+          </button>
+          <button
+            class="category-btn bg-white hover:bg-gray-200 px-4 py-2 rounded-full whitespace-nowrap transition-all"
+            data-category="food"
+          >
+            <i class="fas fa-utensils mr-1"> </i>
+            食品饮料
+          </button>
+          <button
+            class="category-btn bg-white hover:bg-gray-200 px-4 py-2 rounded-full whitespace-nowrap transition-all"
+            data-category="home"
+          >
+            <i class="fas fa-home mr-1"> </i>
+            家居用品
+          </button>
+        </div>
+      </div>
+    </section>
+    <!-- 商品展示区 -->
+    <section class="py-8">
+      <div class="container mx-auto px-4">
+        <h2 class="text-xl font-bold text-gray-800 mb-6">热门商品</h2>
+        <div
+          class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6"
+        >
+          <!-- 商品卡片1 -->
+          <div
+            class="product-card bg-white rounded-lg overflow-hidden shadow-md transition-all"
+          >
+            <div class="relative h-48 overflow-hidden">
+              <img
+                src="https://aidev.gemcoder.com/staticResource/echoAiSystemImages/86074ea390fbe173f2de734d4f7fc296.png"
+                alt="游戏笔记本"
+                class="w-full h-full object-cover"
+              />
+              <div
+                class="absolute top-2 right-2 bg-red-500 text-white px-2 py-1 rounded text-xs font-bold"
+              >
+                热销
+              </div>
+            </div>
+            <div class="p-4">
+              <h3 class="font-semibold text-gray-800 mb-1">高性能游戏笔记本</h3>
+              <div class="flex items-center mb-2">
+                <div class="flex text-yellow-400 text-xs mr-1">
+                  <i class="fas fa-star"> </i>
+                  <i class="fas fa-star"> </i>
+                  <i class="fas fa-star"> </i>
+                  <i class="fas fa-star"> </i>
+                  <i class="fas fa-star"> </i>
+                </div>
+                <span class="text-gray-500 text-xs"> (56) </span>
+              </div>
+              <div class="flex justify-between items-center">
+                <div>
+                  <span class="text-red-500 font-bold text-lg"> ¥6999 </span>
+                  <span class="text-gray-400 text-sm line-through ml-1">
+                    ¥7999
+                  </span>
+                </div>
+                <button
+                  class="add-to-cart-btn text-blue-500 hover:text-blue-700"
+                >
+                  <i class="fas fa-cart-plus text-xl"> </i>
+                </button>
+              </div>
+            </div>
+          </div>
+          <!-- 商品卡片2 -->
+          <div
+            class="product-card bg-white rounded-lg overflow-hidden shadow-md transition-all"
+          >
+            <div class="h-48 overflow-hidden">
+              <img
+                src="https://aidev.gemcoder.com/staticResource/echoAiSystemImages/de01e12f5f7ce5a4c311bb992cdd20d6.png"
+                alt="无线耳机"
+                class="w-full h-full object-cover"
+              />
+            </div>
+            <div class="p-4">
+              <h3 class="font-semibold text-gray-800 mb-1">无线蓝牙耳机</h3>
+              <div class="flex items-center mb-2">
+                <div class="flex text-yellow-400 text-xs mr-1">
+                  <i class="fas fa-star"> </i>
+                  <i class="fas fa-star"> </i>
+                  <i class="fas fa-star"> </i>
+                  <i class="fas fa-star"> </i>
+                  <i class="fas fa-star-half-alt"> </i>
+                </div>
+                <span class="text-gray-500 text-xs"> (42) </span>
+              </div>
+              <div class="flex justify-between items-center">
+                <div>
+                  <span class="text-red-500 font-bold text-lg"> ¥299 </span>
+                  <span class="text-gray-400 text-sm line-through ml-1">
+                    ¥399
+                  </span>
+                </div>
+                <button
+                  class="add-to-cart-btn text-blue-500 hover:text-blue-700"
+                >
+                  <i class="fas fa-cart-plus text-xl"> </i>
+                </button>
+              </div>
+            </div>
+          </div>
+          <!-- 商品卡片3 -->
+          <div
+            class="product-card bg-white rounded-lg overflow-hidden shadow-md transition-all"
+          >
+            <div class="h-48 overflow-hidden">
+              <img
+                src='https://aidev.gemcoder.com/staticResource/echoAiSystemImages/3dba11ae277743966769aec050663288.png'
+                alt="男士衬衫"
+                class="w-full h-full object-cover"
+              />
+            </div>
+            <div class="p-4">
+              <h3 class="font-semibold text-gray-800 mb-1">男士休闲衬衫</h3>
+              <div class="flex items-center mb-2">
+                <div class="flex text-yellow-400 text-xs mr-1">
+                  <i class="fas fa-star"> </i>
+                  <i class="fas fa-star"> </i>
+                  <i class="fas fa-star"> </i>
+                  <i class="fas fa-star"> </i>
+                  <i class="fas fa-star"> </i>
+                </div>
+                <span class="text-gray-500 text-xs"> (38) </span>
+              </div>
+              <div class="flex justify-between items-center">
+                <div>
+                  <span class="text-red-500 font-bold text-lg"> ¥199 </span>
+                </div>
+                <button
+                  class="add-to-cart-btn text-blue-500 hover:text-blue-700"
+                >
+                  <i class="fas fa-cart-plus text-xl"> </i>
+                </button>
+              </div>
+            </div>
+          </div>
+          <!-- 商品卡片4 -->
+          <div
+            class="product-card bg-white rounded-lg overflow-hidden shadow-md transition-all"
+          >
+            <div class="h-48 overflow-hidden">
+              <img
+                src="https://aidev.gemcoder.com/staticResource/echoAiSystemImages/1525c29c8503fa479b8fa7a695c02059.png"
+                alt="有机咖啡"
+                class="w-full h-full object-cover"
+              />
+            </div>
+            <div class="p-4">
+              <h3 class="font-semibold text-gray-800 mb-1">有机咖啡豆</h3>
+              <div class="flex items-center mb-2">
+                <div class="flex text-yellow-400 text-xs mr-1">
+                  <i class="fas fa-star"> </i>
+                  <i class="fas fa-star"> </i>
+                  <i class="fas fa-star"> </i>
+                  <i class="fas fa-star"> </i>
+                  <i class="fas fa-star-half-alt"> </i>
+                </div>
+                <span class="text-gray-500 text-xs"> (27) </span>
+              </div>
+              <div class="flex justify-between items-center">
+                <div>
+                  <span class="text-red-500 font-bold text-lg"> ¥89 </span>
+                  <span class="text-gray-400 text-sm line-through ml-1">
+                    ¥129
+                  </span>
+                </div>
+                <button
+                  class="add-to-cart-btn text-blue-500 hover:text-blue-700"
+                >
+                  <i class="fas fa-cart-plus text-xl"> </i>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+    <script>
+      document.addEventListener('DOMContentLoaded', function () {
+        // 分类按钮点击事件
+        var categoryBtns = document.querySelectorAll('.category-btn');
+        categoryBtns.forEach(function (btn) {
+          btn.addEventListener('click', function () {
+            // 移除所有按钮的激活样式
+            categoryBtns.forEach(function (b) {
+              b.classList.remove('bg-blue-500', 'text-white');
+              b.classList.add('bg-white', 'hover:bg-gray-200');
+            });
+
+            // 添加当前按钮的激活样式
+            this.classList.remove('bg-white', 'hover:bg-gray-200');
+            this.classList.add('bg-blue-500', 'text-white');
+
+            // 这里可以添加筛选商品的逻辑
+            var category = this.dataset.category;
+            console.log('筛选分类:', category);
+          });
+        });
+        // 添加到购物车按钮点击事件
+        var addToCartBtns = document.querySelectorAll('.add-to-cart-btn');
+        addToCartBtns.forEach(function (btn) {
+          btn.addEventListener('click', function () {
+            var productCard = this.closest('.product-card');
+            var productName = productCard.querySelector('h3').textContent;
+            var productPrice = productCard.querySelector('.text-red-500').textContent;
+
+            // 这里可以添加添加到购物车的逻辑
+            console.log('添加到购物车:', productName, productPrice);
+
+            // 显示添加成功的提示
+            alert("\u5DF2\u6DFB\u52A0 ".concat(productName, " \u5230\u8D2D\u7269\u8F66"));
+          });
+        });
+        // 搜索功能
+        var searchInput = document.querySelector('input[type="text"]');
+        searchInput.addEventListener('keypress', function (e) {
+          if (e.key === 'Enter') {
+            var searchTerm = this.value.trim();
+            if (searchTerm) {
+              // 这里可以添加搜索商品的逻辑
+              console.log('搜索关键词:', searchTerm);
+              alert("\u6B63\u5728\u641C\u7D22: ".concat(searchTerm));
+            }
+          }
+        });
+      });
+    </script>
+  </body>
+</html>

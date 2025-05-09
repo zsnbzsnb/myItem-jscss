@@ -1,0 +1,279 @@
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>订单管理</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+      rel="stylesheet"
+      href="https://cdn.bootcdn.net/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <style>
+      .order-card:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+      }
+      .tab-active {
+          border-bottom: 3px solid #3b82f6;
+          color: #3b82f6;
+          font-weight: 600;
+      }
+    </style>
+  </head>
+  <body class="bg-gray-100 min-h-screen">
+    <div class="container mx-auto px-4 py-8">
+      <h1 class="text-3xl font-bold text-gray-800 mb-8">我的订单</h1>
+      <!-- 订单状态筛选 -->
+      <div class="flex border-b border-gray-200 mb-6">
+        <button
+          onclick='filterOrders("all")'
+          class="tab-button px-4 py-2 mr-2 text-gray-600 hover:text-blue-500 tab-active"
+          id="tab-all"
+        >
+          全部订单
+        </button>
+        <button
+          onclick='filterOrders("paid")'
+          class="tab-button px-4 py-2 mr-2 text-gray-600 hover:text-blue-500"
+          id="tab-paid"
+        >
+          已支付
+        </button>
+        <button
+          onclick='filterOrders("unpaid")'
+          class="tab-button px-4 py-2 mr-2 text-gray-600 hover:text-blue-500"
+          id="tab-unpaid"
+        >
+          待支付
+        </button>
+        <button
+          onclick='filterOrders("cancelled")'
+          class="tab-button px-4 py-2 text-gray-600 hover:text-blue-500"
+          id="tab-cancelled"
+        >
+          已取消
+        </button>
+      </div>
+      <!-- 订单列表 -->
+      <div
+        class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+        id="orders-container"
+      >
+        <!-- 订单卡片将通过JavaScript动态生成 -->
+      </div>
+    </div>
+    <!-- 取消订单确认模态框 -->
+    <div
+      id="cancel-modal"
+      class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden"
+    >
+      <div class="bg-white rounded-lg p-6 max-w-md w-full">
+        <h3 class="text-xl font-semibold mb-4">确认取消订单</h3>
+        <p class="text-gray-600 mb-6">
+          您确定要取消此订单吗？取消后订单将无法恢复。
+        </p>
+        <div class="flex justify-end space-x-3">
+          <button
+            onclick="closeCancelModal()"
+            class="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
+          >
+            取消
+          </button>
+          <button
+            onclick="confirmCancelOrder()"
+            class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
+          >
+            确认取消
+          </button>
+        </div>
+      </div>
+    </div>
+    <script>
+      // 订单数据
+      var orders = [{
+        id: 'ORD-20230001',
+        date: '2023-05-15',
+        status: 'paid',
+        total: 1299.00,
+        items: [{
+          name: '高端游戏笔记本',
+          price: 1299.00,
+          quantity: 1,
+          image: 'https://aidev.gemcoder.com/staticResource/echoAiSystemImages/82bc6b1cff06703b82cb958a0530eff2.png'
+        }]
+      }, {
+        id: 'ORD-20230002',
+        date: '2023-05-18',
+        status: 'unpaid',
+        total: 599.00,
+        items: [{
+          name: '无线蓝牙耳机',
+          price: 199.00,
+          quantity: 1,
+          image: 'https://aidev.gemcoder.com/staticResource/echoAiSystemImages/0121b02e29d72d8eb4c4fb15e762292c.png'
+        }, {
+          name: '智能手表',
+          price: 399.00,
+          quantity: 1,
+          image: 'https://aidev.gemcoder.com/staticResource/echoAiSystemImages/238278d217ceb7f545aea804ce04daae.png'
+        }]
+      }, {
+        id: 'ORD-20230003',
+        date: '2023-05-10',
+        status: 'cancelled',
+        total: 899.00,
+        items: [{
+          name: '智能手机',
+          price: 899.00,
+          quantity: 1,
+          image: 'https://aidev.gemcoder.com/staticResource/echoAiSystemImages/77897aeed9b704948662310a886d45bb.png'
+        }]
+      }, {
+        id: 'ORD-20230004',
+        date: '2023-05-20',
+        status: 'paid',
+        total: 249.00,
+        items: [{
+          name: '机械键盘',
+          price: 249.00,
+          quantity: 1,
+          image: 'https://aidev.gemcoder.com/staticResource/echoAiSystemImages/3a1f2ddb3df2ec8a8c277f59a422d027.png'
+        }]
+      }, {
+        id: 'ORD-20230005',
+        date: '2023-05-22',
+        status: 'unpaid',
+        total: 1599.00,
+        items: [{
+          name: '4K显示器',
+          price: 1599.00,
+          quantity: 1,
+          image: 'https://aidev.gemcoder.com/staticResource/echoAiSystemImages/86308ffb06adf2e5b967b3fa3c8f94a5.png'
+        }]
+      }];
+      // 当前选中的订单ID（用于取消操作）
+      var currentSelectedOrderId = null;
+      // 初始化页面
+      document.addEventListener('DOMContentLoaded', function () {
+        renderOrders('all');
+      });
+      // 渲染订单列表
+      function renderOrders(status) {
+        var container = document.getElementById('orders-container');
+        container.innerHTML = '';
+        // 更新标签状态
+        document.querySelectorAll('.tab-button').forEach(function (button) {
+          button.classList.remove('tab-active');
+        });
+        document.getElementById("tab-".concat(status)).classList.add('tab-active');
+        // 筛选订单
+        var filteredOrders = status === 'all' ? orders : orders.filter(function (order) {
+          return order.status === status;
+        });
+        if (filteredOrders.length === 0) {
+          container.innerHTML = "\n                    <div class=\"col-span-full text-center py-12\">\n                        <i class=\"fas fa-box-open text-4xl text-gray-400 mb-4\"></i>\n                        <p class=\"text-gray-500\">\u6682\u65E0".concat(getStatusText(status), "\u8BA2\u5355</p>\n                    </div>\n                ");
+          return;
+        }
+        filteredOrders.forEach(function (order) {
+          var orderCard = createOrderCard(order);
+          container.appendChild(orderCard);
+        });
+      }
+      // 创建订单卡片
+      function createOrderCard(order) {
+        var card = document.createElement('div');
+        card.className = 'bg-white rounded-lg shadow-md overflow-hidden order-card transition-all duration-200';
+        // 订单头部
+        var header = document.createElement('div');
+        header.className = 'flex justify-between items-center p-4 border-b border-gray-200';
+        header.innerHTML = "\n                <div>\n                    <span class=\"font-medium\">\u8BA2\u5355\u53F7: ".concat(order.id, "</span>\n                    <span class=\"text-gray-500 text-sm ml-2\">").concat(order.date, "</span>\n                </div>\n                <span class=\"px-2 py-1 rounded-full text-xs font-medium ").concat(getStatusClass(order.status), "\">\n                    ").concat(getStatusText(order.status), "\n                </span>\n            ");
+        // 订单商品
+        var itemsContainer = document.createElement('div');
+        itemsContainer.className = 'p-4 space-y-4';
+        order.items.forEach(function (item) {
+          var itemElement = document.createElement('div');
+          itemElement.className = 'flex items-center';
+          itemElement.innerHTML = "\n                    <div class=\"w-16 h-16 rounded-md overflow-hidden mr-3\">\n                        <img src=\"".concat(item.image, "\" alt=\"").concat(item.name, "\" class=\"w-full h-full object-cover\">\n                    </div>\n                    <div class=\"flex-1\">\n                        <p class=\"text-sm font-medium text-gray-800\">").concat(item.name, "</p>\n                        <p class=\"text-xs text-gray-500\">\xA5").concat(item.price.toFixed(2), " \xD7 ").concat(item.quantity, "</p>\n                    </div>\n                ");
+          itemsContainer.appendChild(itemElement);
+        });
+        // 订单底部
+        var footer = document.createElement('div');
+        footer.className = 'p-4 border-t border-gray-200 bg-gray-50';
+        footer.innerHTML = "\n                <div class=\"flex justify-between items-center\">\n                    <span class=\"font-medium text-gray-800\">\u5408\u8BA1: <span class=\"text-red-500\">\xA5".concat(order.total.toFixed(2), "</span></span>\n                    <div class=\"space-x-2\">\n                        ").concat(order.status === 'unpaid' ? "\n                            <button onclick=\"payOrder('".concat(order.id, "')\" class=\"px-3 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700\">\n                                \u7ACB\u5373\u652F\u4ED8\n                            </button>\n                            <button onclick=\"showCancelModal('").concat(order.id, "')\" class=\"px-3 py-1 border border-gray-300 text-gray-700 text-sm rounded hover:bg-gray-100\">\n                                \u53D6\u6D88\u8BA2\u5355\n                            </button>\n                        ") : '', "\n                        ").concat(order.status === 'paid' ? "\n                            <button onclick=\"viewDetails('".concat(order.id, "')\" class=\"px-3 py-1 border border-gray-300 text-gray-700 text-sm rounded hover:bg-gray-100\">\n                                \u67E5\u770B\u8BE6\u60C5\n                            </button>\n                        ") : '', "\n                    </div>\n                </div>\n            ");
+        card.appendChild(header);
+        card.appendChild(itemsContainer);
+        card.appendChild(footer);
+        return card;
+      }
+      // 获取状态文本
+      function getStatusText(status) {
+        switch (status) {
+          case 'paid':
+            return '已支付';
+          case 'unpaid':
+            return '待支付';
+          case 'cancelled':
+            return '已取消';
+          case 'all':
+            return '';
+          default:
+            return '';
+        }
+      }
+      // 获取状态样式类
+      function getStatusClass(status) {
+        switch (status) {
+          case 'paid':
+            return 'bg-green-100 text-green-800';
+          case 'unpaid':
+            return 'bg-yellow-100 text-yellow-800';
+          case 'cancelled':
+            return 'bg-gray-100 text-gray-800';
+          default:
+            return '';
+        }
+      }
+      // 筛选订单
+      function filterOrders(status) {
+        renderOrders(status);
+      }
+      // 显示取消订单模态框
+      function showCancelModal(orderId) {
+        currentSelectedOrderId = orderId;
+        document.getElementById('cancel-modal').classList.remove('hidden');
+      }
+      // 关闭取消订单模态框
+      function closeCancelModal() {
+        document.getElementById('cancel-modal').classList.add('hidden');
+        currentSelectedOrderId = null;
+      }
+      // 确认取消订单
+      function confirmCancelOrder() {
+        if (!currentSelectedOrderId) return;
+        var orderIndex = orders.findIndex(function (order) {
+          return order.id === currentSelectedOrderId;
+        });
+        if (orderIndex !== -1) {
+          orders[orderIndex].status = 'cancelled';
+          renderOrders(document.querySelector('.tab-active').id.replace('tab-', ''));
+        }
+        closeCancelModal();
+      }
+      // 支付订单
+      function payOrder(orderId) {
+        var orderIndex = orders.findIndex(function (order) {
+          return order.id === orderId;
+        });
+        if (orderIndex !== -1) {
+          orders[orderIndex].status = 'paid';
+          renderOrders(document.querySelector('.tab-active').id.replace('tab-', ''));
+          alert('支付成功！');
+        }
+      }
+      // 查看订单详情
+      function viewDetails(orderId) {
+        alert("\u67E5\u770B\u8BA2\u5355\u8BE6\u60C5: ".concat(orderId));
+      }
+    </script>
+  </body>
+</html>

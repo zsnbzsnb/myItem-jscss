@@ -144,16 +144,15 @@
                   const result = await response.json();
                   // 修改判断条件，匹配字符串 "200"
                   if (result.code === "200") {
+                      // 修改购物车数据转换逻辑
                       cartItems = result.data.map(item => ({
                           id: item.cartId,
-                          // 使用商品名称，如果不存在则用默认值
-                          name: item.productName || `未命名商品 - ${item.productId}`, 
+                          name: item.productName || `未命名商品 - ${item.productId}`,
                           price: item.price,
                           quantity: item.quantity,
                           selected: item.selected,
-                          // 确保 productId 正确赋值
-                          productId: item.productId, 
-                          // 确保图片字段处理
+                          productId: item.productId,
+                          userId: item.userId,  // 新增用户ID字段
                           image: item.photos?.trim() || 'https://aidev.gemcoder.com/staticResource/echoAiSystemImages/e2b6bdb306e7c0cdf7cfd01c8575cd9c.png'
                       }));
                       renderCartItems();
@@ -483,16 +482,29 @@
           });
   
           // 结算按钮
+          // 修改结算按钮事件处理逻辑
           checkoutBtn.addEventListener('click', function () {
-              var selectedItems = cartItems.filter(function (item) {
-                return item.selected;
-              });
+              var selectedItems = cartItems.filter(item => item.selected);
               if (selectedItems.length === 0) {
-                alert('请先选择要结算的商品');
-                return;
+                  alert('请先选择要结算的商品');
+                  return;
               }
-              alert("\u5DF2\u63D0\u4EA4\u8BA2\u5355\uFF0C\u603B\u91D1\u989D: \xA5".concat(totalPriceElement.textContent.substring(1)));
-              // 这里可以添加实际的订单提交逻辑
+              
+              // 确保正确获取用户ID和商品ID
+              const productIds = selectedItems.map(item => item.productId).filter(Boolean).join(',');
+              const userId = selectedItems[0]?.userId; // 确保购物车数据中包含userId字段
+              
+              // 添加调试日志
+              console.log('传递参数 - userId:', userId); 
+              console.log('传递参数 - productIds:', productIds);
+  
+              if (!userId || !productIds) {
+                  alert('订单参数异常，请联系客服');
+                  return;
+              }
+  
+              // 添加encodeURIComponent确保参数安全
+              window.location.href = `orderDetail.html?userId=${encodeURIComponent(userId)}&productIds=${encodeURIComponent(productIds)}`;
           });
       })();
       </script>

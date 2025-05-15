@@ -205,53 +205,210 @@
       </div>
     </div>
     <script>
-      // 收藏/取消收藏功能
-      document.querySelectorAll('.fa-heart').forEach(function (heartIcon) {
-        heartIcon.addEventListener('click', function (e) {
-          e.preventDefault();
-          var parentItem = this.closest('.favorite-item');
-          if (this.classList.contains('text-red-500')) {
-            this.classList.remove('text-red-500');
-            this.classList.add('text-gray-400');
-            // 这里可以添加取消收藏的API调用
-            console.log('取消收藏商品');
-          } else {
-            this.classList.remove('text-gray-400');
-            this.classList.add('text-red-500');
-            // 这里可以添加收藏的API调用
-            console.log('收藏商品');
-          }
-        });
-      });
-      // 加入购物车功能
-      document.querySelectorAll('button:has(.fa-shopping-cart)').forEach(function (button) {
-        button.addEventListener('click', function () {
-          var productName = this.closest('.favorite-item').querySelector('h3').textContent;
-          var price = this.closest('.favorite-item').querySelector('span').textContent;
+        // 绑定收藏按钮事件（新增函数，用于动态生成卡片后重新绑定）
+        function bindFavoriteButtons() {
+            document.querySelectorAll('.fa-heart').forEach(function (heartIcon) {
+                heartIcon.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    const parentItem = this.closest('.favorite-item');
+                    const productId = parentItem.getAttribute('data-product-id'); // 从data属性获取商品ID
+                    const userId = localStorage.getItem('userId') || 1; // 从本地存储获取用户ID
+                    const jwtToken = localStorage.getItem('jwtToken');
 
-          // 这里可以添加加入购物车的API调用
-          console.log("\u5C06 ".concat(productName, " (").concat(price, ") \u52A0\u5165\u8D2D\u7269\u8F66"));
+                    if (!jwtToken) {
+                        alert('请先登录');
+                        window.location.href = 'login.html';
+                        return;
+                    }
 
-          // 显示添加成功的提示
-          alert("\u5DF2\u6210\u529F\u5C06 ".concat(productName, " \u52A0\u5165\u8D2D\u7269\u8F66"));
+                    if (this.classList.contains('text-red-500')) {
+                        // 取消收藏（调用DELETE /user/collections/deleteByUserId）
+                        this.classList.remove('text-red-500');
+                        this.classList.add('text-gray-400');
+
+                        fetch(`http://localhost:8002/user/collections/deleteByUserId?productId=${productId}&userId=${userId}`, {
+                            method: 'DELETE',
+                            headers: {
+                                'Authorization': `Bearer ${jwtToken}`
+                            },
+                            mode: 'cors' // 显式设置CORS模式
+                        })
+                        .then(response => {
+                            if (!response.ok) throw new Error('取消收藏失败');
+                            return response.json();
+                        })
+                        .then(data => {
+                            if (data.success) {
+                                console.log('取消收藏成功');
+                                // 可选：从当前页面移除该商品卡片（或刷新分页）
+                                parentItem.remove();
+                            } else {
+                                throw new Error(data.message || '取消收藏失败');
+                            }
+                        })
+                        .catch(error => {
+                            console.error('取消收藏失败:', error);
+                            alert(`取消收藏失败：${error.message}`);
+                            this.classList.remove('text-gray-400');
+                            this.classList.add('text-red-500'); // 恢复图标状态
+                        });
+                    } else {
+                        // 收藏（调用POST /user/collections/addProductToCollection）
+                        this.classList.remove('text-gray-400');
+                        this.classList.add('text-red-500');
+
+                        const productName = parentItem.querySelector('h3').textContent;
+                        const productImg = parentItem.querySelector('img').src;
+
+                        fetch('http://localhost:8002/user/collections/addProductToCollection', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${jwtToken}`
+                            },
+                            body: JSON.stringify({
+                                userId: userId,
+                                productId: parseInt(productId),
+                                productName: productName,
+                                productImg: productImg,
+                                favoriteTime: new Date().toISOString().replace('Z', '') // 可选：传递收藏时间（后端可能自动生成）
+                            }),
+                            mode: 'cors' // 显式设置CORS模式
+                        })
+                        .then(response => {
+                            if (!response.ok) throw new Error('收藏失败');
+                            return response.json();
+                        })
+                        .then(data => {
+                            if (data.success) {
+                                console.log('收藏成功');
+                            } else {
+                                throw new Error(data.message || '收藏失败');
+                            }
+                        })
+                        .catch(error => {
+                            console.error('收藏失败:', error);
+                            alert(`收藏失败：${error.message}`);
+                            this.classList.remove('text-red-500');
+                            this.classList.add('text-gray-400'); // 恢复图标状态
+                        });
+                    }
+                });
+            });
+        }
+
+        // 初始化绑定收藏按钮事件
+        bindFavoriteButtons();
+
+        // 加入购物车功能
+        document.querySelectorAll('button:has(.fa-shopping-cart)').forEach(function (button) {
+          button.addEventListener('click', function () {
+            var productName = this.closest('.favorite-item').querySelector('h3').textContent;
+            var price = this.closest('.favorite-item').querySelector('span').textContent;
+
+            // 这里可以添加加入购物车的API调用
+            console.log("\u5C06 ".concat(productName, " (").concat(price, ") \u52A0\u5165\u8D2D\u7269\u8F66"));
+
+            // 显示添加成功的提示
+            alert("\u5DF2\u6210\u529F\u5C06 ".concat(productName, " \u52A0\u5165\u8D2D\u7269\u8F66"));
+          });
         });
-      });
-      // 筛选和排序按钮功能
-      document.querySelectorAll('button:has(.fa-filter), button:has(.fa-sort)').forEach(function (button) {
-        button.addEventListener('click', function () {
-          var action = this.querySelector('i').classList.contains('fa-filter') ? '筛选' : '排序';
-          console.log("\u70B9\u51FB\u4E86".concat(action, "\u6309\u94AE"));
-          // 这里可以添加筛选或排序的逻辑
+        // 筛选和排序按钮功能
+        document.querySelectorAll('button:has(.fa-filter), button:has(.fa-sort)').forEach(function (button) {
+          button.addEventListener('click', function () {
+            var action = this.querySelector('i').classList.contains('fa-filter') ? '筛选' : '排序';
+            console.log("\u70B9\u51FB\u4E86".concat(action, "\u6309\u94AE"));
+            // 这里可以添加筛选或排序的逻辑
+          });
         });
-      });
-      // 分页按钮功能
-      document.querySelectorAll('nav button:not(:has(i))').forEach(function (button) {
-        button.addEventListener('click', function () {
-          var pageNum = this.textContent;
-          console.log("\u5207\u6362\u5230\u7B2C ".concat(pageNum, " \u9875"));
-          // 这里可以添加分页加载的逻辑
+        // 分页按钮功能
+        document.querySelectorAll('nav button:not(:has(i))').forEach(function (button) {
+            button.addEventListener('click', function () {
+                const pageNum = parseInt(this.textContent);
+                const pageSize = 10;  // 与后端默认 pageSize=10 保持一致
+                const userId = localStorage.getItem('userId');
+                const jwtToken = localStorage.getItem('jwtToken');
+                
+                // 新增：校验userId是否存在
+                if (!userId) {
+                    alert('请先登录以查看收藏夹');
+                    window.location.href = 'login.html';
+                    return; // 阻止发送无效请求
+                }
+
+                // 检查JWT令牌
+                if (!jwtToken) {
+                    alert('请先登录');
+                    window.location.href = 'login.html';
+                    return;
+                }
+                
+                // 调用分页查询接口（修正URL和参数）
+                fetch(`http://localhost:8002/user/collections/getByPageFind?page=${pageNum}&pageSize=${pageSize}&userId=${userId}`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${jwtToken}` // 添加JWT认证头
+                    },
+                    mode: 'cors' // 显式设置CORS模式
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        if (response.status === 401) {
+                            window.location.href = 'login.html'; // 未授权跳转登录
+                        }
+                        throw new Error(`请求失败，状态码：${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.code === 200) { // 后端ResultData的成功状态码
+                        const goodsContainer = document.querySelector('.grid');
+                        goodsContainer.innerHTML = ''; // 清空原有数据
+                        
+                        // 处理空数据情况
+                        if (!data.data?.list?.length) {
+                            goodsContainer.innerHTML = `<div class="col-span-4 text-center py-8 text-gray-500">暂无收藏商品</div>`;
+                            return;
+                        }
+                        
+                        // 动态生成商品卡片（根据后端返回的ProductsVO结构）
+                        data.data.list.forEach(item => {
+                            const card = `
+                                <div class="favorite-item bg-white rounded-xl shadow-md overflow-hidden" data-product-id="${item.productId}">
+                                    <div class="relative">
+                                        <img src="${item.productImg}" alt="${item.productName}" class="w-full h-48 object-cover" />
+                                        <button class="absolute top-2 right-2 bg-white rounded-full p-2 text-red-500 hover:text-red-600 transition">
+                                            <i class="fas fa-heart"></i>
+                                        </button>
+                                    </div>
+                                    <div class="p-4">
+                                        <h3 class="text-lg font-semibold text-gray-800 mb-1">${item.productName}</h3>
+                                        <p class="text-gray-500 text-sm mb-2">${item.photos?.join(' | ') || '无描述'}</p>
+                                        <div class="flex justify-between items-center">
+                                            <span class="text-red-500 font-bold text-lg">¥${item.price || '0.00'}</span>
+                                            <button class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded-lg transition">
+                                                <i class="fas fa-shopping-cart mr-1"></i>
+                                                加入购物车
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            `;
+                            goodsContainer.insertAdjacentHTML('beforeend', card);
+                        });
+                        
+                        // 绑定新生成的收藏按钮事件
+                        bindFavoriteButtons();
+                    } else {
+                        throw new Error(data.message || '分页查询失败');
+                    }
+                })
+                .catch(error => {
+                    console.error('分页加载失败:', error);
+                    alert(`分页加载失败：${error.message}`);
+                });
+            });
         });
-      });
     </script>
   </body>
 </html>

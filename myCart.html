@@ -193,10 +193,10 @@
                                 <input type="checkbox" class="item-checkbox h-5 w-5 text-blue-600 rounded mr-4" ${item.selected ? 'checked' : ''}>
                                 <div class="flex-shrink-0 w-20 h-20 rounded overflow-hidden">
                                     <!-- 使用处理后的图片 URL -->
-                                    <img src="${imageUrl}" alt="${item.name}" class="w-full h-full object-cover">
+                                    <img src="${imageUrl}" alt="${item.name}" class="w-full h-full object-cover cursor-pointer">
                                 </div>
                                 <div class="ml-4">
-                                    <h3 class="text-lg font-medium text-gray-800">${item.name}</h3>
+                                    <h3 class="text-lg font-medium text-gray-800 cursor-pointer hover:text-blue-600">${item.name}</h3>
                                     <p class="text-red-500 font-bold mt-1">¥${item.price.toFixed(2)}</p>
                                 </div>
                             </div>
@@ -220,6 +220,18 @@
                         </div>
                     `;
                 cartItemsContainer.appendChild(itemElement);
+                
+                // 添加商品名称和图片的点击事件
+                const productNameElement = itemElement.querySelector('.text-lg.font-medium');
+                const productImageElement = itemElement.querySelector('img');
+                
+                productNameElement.addEventListener('click', function() {
+                    window.location.href = `product.html?productId=${item.productId}`;
+                });
+                
+                productImageElement.addEventListener('click', function() {
+                    window.location.href = `product.html?productId=${item.productId}`;
+                });
               });
               updateSummary();
           }

@@ -158,76 +158,99 @@
         // 清空现有内容
         productList.innerHTML = '';
       
-        // 生成商品卡片
+        // 修改 renderProducts 函数中的商品卡片部分
         products.forEach(function (product) {
-          const productCard = document.createElement('div');
-          productCard.className = 'bg-white rounded-lg shadow-md overflow-hidden product-card transition-all duration-300';
-          productCard.innerHTML = `
-            <div class="h-48 overflow-hidden">
-              <img src="${product.photos || '默认图片URL'}" alt="${product.productName}" class="w-full h-full object-cover">
-            </div>
-            <div class="p-4">
-              <h3 class="text-lg font-semibold text-gray-800 mb-1 truncate">${product.productName}</h3>
-              <p class="text-sm text-gray-500 mb-3 line-clamp-2">${product.description}</p>
-              <div class="flex items-center justify-between mb-2">
-                <div>
-                  <span class="text-red-500 font-bold text-lg">¥${product.price.toFixed(2)}</span>
-                  <span class="text-gray-400 text-sm line-through ml-2">¥${(product.price * 1.2).toFixed(2)}</span>
+            const productCard = document.createElement('div');
+            productCard.className = 'bg-white rounded-lg shadow-md overflow-hidden product-card transition-all duration-300';
+            productCard.innerHTML = `
+                <div class="h-48 overflow-hidden">
+                    <img src="${product.photos || '默认图片URL'}" alt="${product.productName}" class="w-full h-full object-cover">
                 </div>
-                <span class="text-sm text-green-500">
-                  库存充足
-                </span>
-              </div>
-              <button onclick="addToCart(${product.productId})" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-md transition-colors duration-300">
-                <i class="fas fa-shopping-cart mr-2"></i>加入购物车
-              </button>
-            </div>
-          `;
-          
-          // 为整个商品卡片添加点击事件
-          productCard.addEventListener('click', function(e) {
-            // 阻止事件冒泡，避免点击加入购物车按钮时也触发
-            if (e.target.tagName === 'BUTTON') return;
-            window.location.href = `product.html?productId=${product.productId}`;
-          });
-          
-          productList.appendChild(productCard);
+                <div class="p-4">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-1 truncate">${product.productName}</h3>
+                    <p class="text-sm text-gray-500 mb-3 line-clamp-2">${product.description}</p>
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <span class="text-red-500 font-bold text-lg">¥${product.price.toFixed(2)}</span>
+                            <span class="text-gray-400 text-sm line-through ml-2">¥${(product.price * 1.2).toFixed(2)}</span>
+                        </div>
+                        <span class="text-sm text-green-500">
+                            库存充足
+                        </span>
+                    </div>
+                </div>
+            `;
+            
+            // 为整个商品卡片添加点击事件
+            productCard.addEventListener('click', function() {
+                window.location.href = `product.html?productId=${product.productId}`;
+            });
+            
+            productList.appendChild(productCard);
         });
       }
       
       // 加入购物车函数
+      // 删除 addToCart 函数
       async function addToCart(productId) {
-        try {
-          const response = await fetch('http://localhost:9527/cart/addProductToCart', {
-            method: 'POST',
-            headers: {
-              'Authorization': `Bearer ${getJwtToken()}`,
-              'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-              productId: productId,
-              quantity: 1,
-              selected: true,
-              status: 1
-            })
-          });
+          try {
+              // 先获取商品信息
+              const productResponse = await fetch(`http://localhost:9527/goods/selectByPrimaryKey?productId=${productId}`, {
+                  headers: {
+                      'Authorization': `Bearer ${getJwtToken()}`
+                  }
+              });
       
-          const result = await response.json();
-          if (response.status === 401) {
-            localStorage.removeItem('jwtToken');
-            window.location.href = 'login.html';
-            return;
-          }
+              if (productResponse.status === 401) {
+                  localStorage.removeItem('jwtToken');
+                  window.location.href = 'login.html';
+                  return;
+              }
       
-          if (result.code === 200) {
-            alert(result.message || '已添加到购物车');
-          } else {
-            alert(result.message || '添加到购物车失败');
+              const productData = await productResponse.json();
+              if (!productData.data) {
+                  throw new Error('获取商品信息失败');
+              }
+      
+              const productInfo = productData.data;
+              
+              // 调用API添加到购物车
+              const response = await fetch('http://localhost:9527/cart/addProductToCart', {
+                  method: 'POST',
+                  headers: {
+                      'Authorization': `Bearer ${getJwtToken()}`,
+                      'Content-Type': 'application/json'
+                  },
+                  body: JSON.stringify({
+                      productId: productId,
+                      quantity: 1,
+                      selected: true,
+                      status: 1,
+                      price: productInfo.price,
+                      photos: productInfo.photos || "",
+                      createdAt: new Date().toISOString(),
+                      updatedAt: new Date().toISOString(),
+                      productName: productInfo.productName,
+                      description: productInfo.description
+                  })
+              });
+      
+              const result = await response.json();
+              if (response.status === 401) {
+                  localStorage.removeItem('jwtToken');
+                  window.location.href = 'login.html';
+                  return;
+              }
+      
+              if (result.code === 200) {
+                  alert(result.message || '已添加到购物车');
+              } else {
+                  alert(result.message || '添加到购物车失败');
+              }
+          } catch (error) {
+              console.error('添加到购物车出错:', error);
+              alert('添加到购物车失败');
           }
-        } catch (error) {
-          console.error('添加到购物车出错:', error);
-          alert('添加到购物车失败');
-        }
       }
       
       // 页面加载完成后渲染商品
@@ -304,5 +327,137 @@
         
         // 渲染商品列表
         await renderProducts();
+      });
+    </script>
+    <script>
+      // 购物车数据
+      let cart = {
+        items: [],
+        total: 0
+      };
+    
+      // 更新购物车显示
+      function updateCartDisplay() {
+        const cartTotal = localStorage.getItem('cartTotal') || 0;
+        const cartCount = localStorage.getItem('cartCount') || 0;
+    
+        document.getElementById('cart-count').textContent = cartCount;
+        document.getElementById('cart-total').textContent = `¥${parseFloat(cartTotal).toFixed(2)}`;
+      }
+    
+      // 从localStorage加载购物车数据
+      function loadCart() {
+        const savedCart = localStorage.getItem('shoppingCart');
+        if (savedCart) {
+          cart = JSON.parse(savedCart);
+          updateCartDisplay();
+        }
+      }
+    
+      // 保存购物车数据到localStorage
+      function saveCart() {
+        localStorage.setItem('shoppingCart', JSON.stringify(cart));
+      }
+    
+      // 初始化购物车悬浮栏
+      function initCartBar() {
+        const cartBar = document.createElement('div');
+        cartBar.className = 'fixed bottom-0 left-0 right-0 bg-white shadow-lg border-t border-gray-200 p-4 z-50';
+        cartBar.innerHTML = `
+          <div class="container mx-auto flex justify-between items-center">
+            <div class="flex items-center space-x-4">
+              <div class="relative">
+                <i class="fas fa-shopping-cart text-2xl text-blue-600"></i>
+                <span id="cart-count" class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">0</span>
+              </div>
+              <div>
+                <p class="text-gray-600 text-sm">总价</p>
+                <p id="cart-total" class="font-bold text-lg">¥0.00</p>
+              </div>
+            </div>
+            <button 
+              id="view-cart-btn"
+              class="bg-blue-600 hover:bg-blue-700 text-white py-2 px-6 rounded-lg font-medium"
+            >
+              查看购物车
+            </button>
+          </div>
+        `;
+        document.body.appendChild(cartBar);
+    
+        // 查看购物车按钮事件
+        document.getElementById('view-cart-btn').addEventListener('click', function() {
+          const total = cart.items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+          localStorage.setItem('cartTotal', total.toFixed(2));
+          localStorage.setItem('cartCount', cart.items.length);
+          window.location.href = 'myCart.html';
+        });
+      }
+    
+      // 修改加入购物车函数
+      async function addToCart(productId) {
+        try {
+          const response = await fetch('http://localhost:9527/cart/addProductToCart', {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${getJwtToken()}`,
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              productId: productId,
+              quantity: 1,
+              selected: true,
+              status: 1
+            })
+          });
+    
+          const result = await response.json();
+          if (response.status === 401) {
+            localStorage.removeItem('jwtToken');
+            window.location.href = 'login.html';
+            return;
+          }
+    
+          if (result.code === 200) {
+            // 获取商品信息以更新本地购物车
+            const productResponse = await fetch(`http://localhost:9527/goods/selectByPrimaryKey?productId=${productId}`, {
+              headers: {
+                'Authorization': `Bearer ${getJwtToken()}`
+              }
+            });
+            
+            if (productResponse.ok) {
+              const productData = await productResponse.json();
+              if (productData.code === "200" && productData.data) {
+                cart.items.push({
+                  productId: productId,
+                  productName: productData.data.productName,
+                  quantity: 1,
+                  price: productData.data.price
+                });
+                
+                cart.total = cart.items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+                updateCartDisplay();
+                saveCart();
+                
+                localStorage.setItem('cartTotal', cart.total.toFixed(2));
+                localStorage.setItem('cartCount', cart.items.length);
+              }
+            }
+    
+            alert(result.message || '已添加到购物车');
+          } else {
+            alert(result.message || '添加到购物车失败');
+          }
+        } catch (error) {
+          console.error('添加到购物车出错:', error);
+          alert('添加到购物车失败');
+        }
+      }
+    
+      // 初始化购物车
+      document.addEventListener('DOMContentLoaded', function() {
+        loadCart();
+        initCartBar();
       });
     </script>

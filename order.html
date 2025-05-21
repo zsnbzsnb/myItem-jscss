@@ -100,7 +100,9 @@
 
         document.addEventListener('DOMContentLoaded', function () {
             const jwtToken = localStorage.getItem('jwtToken');
+            // 已正确处理401状态码
             if (!jwtToken) {
+                alert('请先登录');
                 window.location.href = 'login.html';
                 return;
             }
@@ -249,8 +251,9 @@
 
         // 创建订单卡片
         function createOrderCard(order) {
+            // 修改订单卡片容器样式
             var card = document.createElement('div');
-            card.className = 'bg-white rounded-lg shadow-md overflow-hidden order-card transition-all duration-200';
+            card.className = 'bg-white rounded-lg shadow-md overflow-hidden order-card transition-all duration-200 flex flex-col h-full';
             // 订单头部
             var header = document.createElement('div');
             header.className = 'flex justify-between items-center p-4 border-b border-gray-200';
@@ -284,8 +287,9 @@
                 itemsContainer.appendChild(itemElement);
             });
             // 订单底部
+            // 修改订单底部部分
             var footer = document.createElement('div');
-            footer.className = 'p-4 border-t border-gray-200 bg-gray-50';
+            footer.className = 'p-4 border-t border-gray-200 bg-gray-50 mt-auto';  // 添加 mt-auto
             footer.innerHTML = `
                 <div class="flex justify-between items-center">
                     <span class="font-medium text-gray-800">合计: <span class="text-red-500">¥${order.total.toFixed(2)}</span></span>
@@ -364,6 +368,14 @@
         function confirmCancelOrder() {
             if (!currentSelectedOrderId) return;
             
+            // 已正确处理401状态码
+            if (response.status === 401) {
+                altert('登录已过期，请重新登录');
+                localStorage.removeItem('jwtToken');
+                window.location.href = 'login.html';
+                return;
+            }
+
             fetch(`http://localhost:9527/order/cancel?orderId=${currentSelectedOrderId}`, {
                 method: 'POST',
                 headers: {

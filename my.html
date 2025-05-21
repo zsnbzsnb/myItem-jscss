@@ -402,6 +402,12 @@
                       }
                   });
                   
+                  if (goodsResponse.status === 401) {
+                      localStorage.removeItem('jwtToken');
+                      window.location.href = 'login.html';  // 直接跳转，不显示提示
+                      return;
+                  }
+                  
                   if (!goodsResponse.ok) throw new Error('商品信息接口异常');
                   const goodsData = await goodsResponse.json();
                   
@@ -411,6 +417,22 @@
                       const goodsCountElement = myGoodsCard.querySelector('.bg-blue-100.text-blue-800.text-xs.font-medium');
                       if (goodsCountElement) {
                           goodsCountElement.textContent = `${goodsData.data.total}件商品`;
+                      }
+
+                      // 渲染前三个商品图片
+                      const goodsImagesContainer = myGoodsCard.querySelector('.grid.grid-cols-3.gap-2.mb-4');
+                      if (goodsImagesContainer && goodsData.data.products && goodsData.data.products.length > 0) {
+                          goodsImagesContainer.innerHTML = '';
+                          
+                          // 只取前三个商品
+                          const productsToShow = goodsData.data.products.slice(0, 3);
+                          productsToShow.forEach(product => {
+                              const imgElement = document.createElement('img');
+                              imgElement.src = product.photos || 'https://aidev.gemcoder.com/staticResource/echoAiSystemImages/e2b6bdb306e7c0cdf7cfd01c8575cd9c.png';
+                              imgElement.alt = product.productName;
+                              imgElement.className = 'w-full h-24 object-cover rounded';
+                              goodsImagesContainer.appendChild(imgElement);
+                          });
                       }
                   }
 

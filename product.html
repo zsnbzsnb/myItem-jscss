@@ -29,7 +29,7 @@
       <!-- 修改后的返回按钮（与内容框架对齐） -->
       <div class="mb-6">
         <button 
-          onclick="window.location.href='Main.html'"
+          onclick="history.back()"  // 修改为返回上一页
           class="flex items-center bg-white hover:bg-gray-100 text-gray-800 font-medium py-2 px-4 rounded-lg shadow-md transition-all"
         >
           <i class="fas fa-arrow-left mr-2"></i>
@@ -639,59 +639,68 @@ s
   }
 
   // 获取商家信息
+  // 修改 fetchSellerInfo 函数
   async function fetchSellerInfo() {
-    console.log('开始执行 fetchSellerInfo 函数');
-    try {
-      console.log('开始请求商家信息接口');
-      const response = await fetch('http://localhost:9527/user/getAll', {
-        headers: {
-          'Authorization': `Bearer ${getJwtToken()}`
-        }
-      });
-
-      console.log('商家信息接口响应状态:', response.status);
-      if (response.status === 401) {
-        localStorage.removeItem('jwtToken');
-        window.location.href = 'login.html';
-        return;
+      console.log('开始执行 fetchSellerInfo 函数');
+      try {
+          // 确保已获取商品信息
+          if (!window.productInfo || !window.productInfo.creatorId) {
+              throw new Error('未获取到商品信息或creatorId');
+          }
+  
+          console.log('开始请求商家信息接口');
+          const response = await fetch(`http://localhost:9527/user/getByUserId?userId=${window.productInfo.creatorId}`, {
+              headers: {
+                  'Authorization': `Bearer ${getJwtToken()}`
+              }
+          });
+  
+          console.log('商家信息接口响应状态:', response.status);
+          if (response.status === 401) {
+              localStorage.removeItem('jwtToken');
+              window.location.href = 'login.html';
+              return;
+          }
+  
+          const result = await response.json();
+          console.log('获取到的商家信息:', result);
+          if (result.code === "200" && result.data) {
+              const sellerInfo = result.data;
+              
+              // 检查商家状态
+              if (sellerInfo.status === 1) {
+            
+                  // 添加封禁标签
+                  const sellerContainer = document.querySelector('.p-6.border-t.border-gray-200');
+                  if (sellerContainer) {
+                      const bannedTag = document.createElement('span');
+                      bannedTag.className = 'bg-red-100 text-red-800 text-sm font-medium ml-2 px-2.5 py-0.5 rounded';
+                      bannedTag.textContent = '用户违反社区规定已被封禁';
+                      sellerContainer.querySelector('.text-lg.font-semibold').after(bannedTag);
+                  }
+              }
+  
+              // 渲染商家头像
+              const sellerAvatar = document.querySelector('.w-16.h-16 img');
+              if (sellerInfo.avatar) {
+                  sellerAvatar.src = sellerInfo.avatar;
+                  console.log('商家头像URL已更新:', sellerInfo.avatar);
+              }
+  
+              // 更新商家名称
+              const sellerNameElement = document.querySelector('.p-6.border-t.border-gray-200 .text-lg.font-semibold');
+              if (sellerNameElement) {
+                  sellerNameElement.textContent = sellerInfo.username;
+              } else {
+                  console.error('未找到商家名称元素，无法渲染商家名称');
+              }
+          } else {
+              throw new Error(result.message || '获取商家信息失败');
+          }
+      } catch (error) {
+          console.error('获取商家信息失败:', error);
+          alert(error.message);
       }
-
-      const result = await response.json();
-      console.log('获取到的商家信息:', result);
-      if (result.code === "200" && result.data) {
-        const sellerInfo = result.data;
-        // 渲染商家头像 - 修改这部分代码
-        const sellerAvatar = document.querySelector('.w-16.h-16 img');
-        if (sellerInfo.avatar) {
-          sellerAvatar.src = sellerInfo.avatar;
-          console.log('商家头像URL已更新:', sellerInfo.avatar);
-        }
-
-        // 使用更精准的选择器来定位商家名称元素
-        const sellerNameElement = document.querySelector('.p-6.border-t.border-gray-200 .text-lg.font-semibold');
-        if (sellerNameElement) {
-          sellerNameElement.textContent = sellerInfo.username;
-        } else {
-          console.error('未找到商家名称元素，无法渲染商家名称');
-        }
-        // 这里假设信用分转换为评分，可根据实际情况调整
-        const creditScore = sellerInfo.creditScore || 0;
-        const rating = Math.min(5, Math.floor(creditScore / 20));
-        const starHTML = Array(rating).fill('<i class="fas fa-star"></i>').join('') + 
-                         (creditScore % 20 >= 10 ? '<i class="fas fa-star-half-alt"></i>' : '') +
-                         Array(5 - Math.ceil(creditScore / 20)).fill('<i class="far fa-star"></i>').join('');
-        // 渲染商家评分
-        document.querySelector('.flex.text-yellow-400.text-sm').innerHTML = starHTML;
-        // 渲染商家评分文字
-        document.querySelector('.text-gray-600.text-sm.ml-2').textContent = `${(creditScore / 20).toFixed(1)}分`;
-        // 移除电话、邮箱和额外描述信息的渲染逻辑
-      } else {
-        console.error('获取商家信息失败:', result.message);
-      }
-    } catch (error) {
-      console.error('获取商家信息失败:', error);
-      alert('获取商家信息失败');
-    }
   }
 
   // 在DOM加载完成后执行

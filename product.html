@@ -477,11 +477,17 @@ s
                   quantity: quantity,
                   price: parseFloat(document.querySelector('.text-red-600').textContent.replace('¥', ''))
               });
-              
-              cart.total = cart.items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+
+              // 更新本地购物车显示和 localStorage
+              const newTotal = cart.items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+              cart.total = newTotal;
               updateCartDisplay();
               saveCart();
-              
+
+              // 同步更新到 localStorage
+              localStorage.setItem('cartTotal', newTotal.toFixed(2));
+              localStorage.setItem('cartCount', cart.items.length);
+
               // 完全移除前端固定的成功提示
               // 只显示后端返回的成功提示（如果有）
               if (result.message) {
@@ -523,11 +529,18 @@ s
       document.addEventListener('DOMContentLoaded', function() {
         loadCart();
         updateCartDisplay(); // 调用更新显示函数
+        // 在加载完成后同步一次购物车数据到 localStorage
+        const total = cart.items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+        localStorage.setItem('cartTotal', total.toFixed(2));
+        localStorage.setItem('cartCount', cart.items.length);
       });
 
       // 查看购物车按钮事件
       document.getElementById('view-cart-btn').addEventListener('click', function() {
-        // 这里可以跳转到购物车页面
+        // 跳转前更新购物车缓存
+        const total = cart.items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+        localStorage.setItem('cartTotal', total.toFixed(2));
+        localStorage.setItem('cartCount', cart.items.length);
         window.location.href = 'myCart.html';  // 修改这里
       });
     </script>

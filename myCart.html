@@ -234,11 +234,11 @@
               }, 0);
               selectedCountElement.textContent = selectedCount;
               totalPriceElement.textContent = `¥${totalPrice.toFixed(2)}`;
-  
+
               // 存储选中商品的总价和数量到 localStorage
               localStorage.setItem('cartTotal', totalPrice);
               localStorage.setItem('cartCount', selectedCount);
-  
+
               // 更新全选状态
               var allSelected = cartItems.length > 0 && cartItems.every(function (item) {
                 return item.selected;
@@ -470,9 +470,12 @@
                           // 清空本地购物车数据
                           cartItems = [];
                           renderCartItems();
+                          // 清理 localStorage 缓存
+                          localStorage.removeItem('cartTotal');
+                          localStorage.removeItem('cartCount');
                           alert('购物车已清空');
                       } else {
-                          alert('清空购物车失败: ' + result.message);
+                          alert('购物车清空失败: ' + result.message);
                       }
                   } catch (error) {
                       console.error('清空购物车请求异常:', error);

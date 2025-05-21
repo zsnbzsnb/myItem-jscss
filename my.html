@@ -292,7 +292,9 @@
                 </div>
             </div>
             <!-- 收藏夹 -->
-            <div class="bg-white rounded-lg shadow-md p-6 transition-all card-hover">
+            <div 
+                onclick="window.location.href='Favorites.html'"
+                class="bg-white rounded-lg shadow-md p-6 transition-all card-hover cursor-pointer">
                 <div class="flex items-center justify-between mb-4">
                     <h2 class="text-xl font-bold text-gray-800">
                         <i class="fas fa-heart mr-2 text-blue-500"></i>
@@ -413,7 +415,7 @@
                   }
 
                   // 获取用户基本信息
-                  console.log('发送用户信息请求'); // 调试用
+                  console.log('发送用户信息请求');
                   const userResponse = await fetch('http://localhost:9527/user/getAll', {
                       method: 'GET',
                       headers: {
@@ -421,11 +423,22 @@
                           'Content-Type': 'application/json',
                       }
                   });
-                  console.log('用户信息响应:', userResponse); // 调试用
-
+                  
                   if (!userResponse.ok) throw new Error('用户信息接口异常');
                   const userData = await userResponse.json();
-                  console.log('用户数据:', userData); // 调试用
+                  console.log('用户数据:', userData);
+
+                  // 仅修改头像渲染部分
+                  const avatarImg = document.querySelector('.avatar-container img');
+                  if (userData.data && userData.data.avatar) {
+                      avatarImg.src = userData.data.avatar;
+                      console.log('头像URL已更新:', userData.data.avatar);
+                  }
+
+                  // 保持原有的用户信息渲染逻辑不变
+                  document.getElementById('username').textContent = userData.data.username;
+                  document.getElementById('email').textContent = userData.data.email;
+                  document.getElementById('phone').textContent = userData.data.phone;
 
                   // 获取地址信息
                   console.log('发送地址信息请求'); // 调试用

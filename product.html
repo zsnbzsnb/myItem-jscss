@@ -414,7 +414,7 @@
                   body: JSON.stringify(requestData)
               });
       
-              if (response.status === 401) {
+              if (response.status === 401) {  
                   localStorage.removeItem('jwtToken');
                   window.location.href = 'login.html';
                   return false;
@@ -570,7 +570,8 @@ s
 
       const productInfo = result.data;
       window.currentProductPrice = productInfo.price; 
-      window.productInfo = productInfo; // 新增：保存完整商品信息到全局变量
+      window.productInfo = productInfo;
+      window.creatorId = productInfo.creatorId; // 已保存creatorId到全局变量
       
       // 渲染商品数据到页面
       document.querySelector('.text-3xl.font-bold').textContent = productInfo.productName;
@@ -646,11 +647,13 @@ s
       console.log('获取到的商家信息:', result);
       if (result.code === "200" && result.data) {
         const sellerInfo = result.data;
-        // 渲染商家信息
-        // 渲染商家头像
-        document.querySelector('.w-16.h-16 img').src = sellerInfo.avatar 
-          ? `路径前缀/${sellerInfo.avatar}` 
-          : 'https://aidev.gemcoder.com/staticResource/echoAiSystemImages/f2f57a506ef029495434dae648af1cf0.png';
+        // 渲染商家头像 - 修改这部分代码
+        const sellerAvatar = document.querySelector('.w-16.h-16 img');
+        if (sellerInfo.avatar) {
+          sellerAvatar.src = sellerInfo.avatar;
+          console.log('商家头像URL已更新:', sellerInfo.avatar);
+        }
+
         // 使用更精准的选择器来定位商家名称元素
         const sellerNameElement = document.querySelector('.p-6.border-t.border-gray-200 .text-lg.font-semibold');
         if (sellerNameElement) {
@@ -684,4 +687,16 @@ s
     loadCart();
     loadAndRenderProduct();  // 新增：加载并渲染商品数据
   });
+
+  // 为商家头像添加点击事件
+  const sellerAvatar = document.querySelector('.w-16.h-16 img');
+  sellerAvatar.style.cursor = 'pointer'; // 添加指针样式
+  sellerAvatar.addEventListener('click', function() {
+      if (window.creatorId) {
+          window.location.href = `store.html?creatorId=${window.creatorId}`;
+      } else {
+          console.error('creatorId不存在');
+      }
+  });
+
 </script>
